@@ -1,0 +1,48 @@
+[project]
+# 是否开启遥测（建议关闭）
+enable_telemetry = false
+
+# 应用名称
+title = "Chainlit 智能体 Demo"
+
+# 是否允许用户上传文件
+allow_origins = ["*"]
+
+[features]
+# 启用文件上传
+multi_modal = true
+
+# 启用语音输入
+speech_to_text = false
+
+# 是否显示读取文件内容的按钮
+show_readme_as_default = true
+
+# 是否允许用户编辑消息
+editable = true
+
+[features.auto_tag]
+# 自动标签功能
+message_regex = ""
+link_regex = ""
+
+[UI]
+# UI 名称（Chainlit 2.0+ 必需）
+name = "Chainlit Demo"
+
+# 主题: light 或 dark
+theme = "light"
+
+# 是否显示 GitHub 链接
+show_github = false
+
+# 面包屑导航
+breadcrumb = "智能体 Demo"
+
+# 默认字体大小
+default_font_size = 14
+
+[meta]
+# 生产商信息
+producer = "Chainlit"
+generated_by = "2.0.0"

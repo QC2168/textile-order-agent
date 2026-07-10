@@ -1,0 +1,35 @@
+[project]
+name = "chainlit-demo"
+version = "0.1.0"
+description = "Chainlit AI Agent Demo"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "chainlit>=2.11.1",
+    "openai>=1.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "poethepoet>=0.24.0",
+]
+
+[tool.poe.tasks]
+# 启动 Chainlit 应用（开发模式，带热重载）
+start = "chainlit run app.py -w"
+
+# 生产模式启动（不带热重载）
+prod = "chainlit run app.py"
+
+# 链式任务：先检查依赖再启动
+run = { sequence = ["sync", "start"], help = "同步依赖并启动开发服务器" }
+
+# 同步依赖
+sync = "uv sync"
+
+[tool.uv]
+default-groups = ["dev"]
+
+[[tool.uv.index]]
+url = "https://mirrors.aliyun.com/pypi/simple/"
+default = true

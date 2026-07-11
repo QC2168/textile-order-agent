@@ -17,7 +17,10 @@ import {
   useMemo,
   useState,
   useTransition,
+  type CSSProperties,
+  type Dispatch,
   type ReactNode,
+  type SetStateAction,
 } from "react";
 
 import {
@@ -31,15 +34,26 @@ import {
   runAnalysisAction,
   selectCaseAction,
 } from "./actions";
-import { labToCssColor } from "./colorbridge/color-utils";
-import { DEFAULT_CONFIRMATION } from "./colorbridge/demo-data";
+import {
+  dyePlanForMaterial,
+  labToCssColor,
+  lightingRiskLabel,
+  lightSceneLabel,
+  previewLabForRendering,
+} from "./colorbridge/color-utils";
+import {
+  adjustDraftLab,
+  buildConfirmationDraft,
+  confirmationDraftToRequirement,
+  draftTargetLabToValue,
+  type ConfirmationDraft,
+} from "./colorbridge/confirmation";
 import {
   getActionFeedback,
   type ActiveAction,
 } from "./colorbridge/interaction-state";
 import { delay, waitForMinimumDuration } from "./colorbridge/loading-state";
 import type {
-  ConfirmedRequirement,
   LabValue,
   StepId,
   WorkbenchState,
@@ -54,9 +68,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -71,7 +95,7 @@ const steps: { id: StepId; label: string }[] = [
   { id: "analysis", label: "AI 分析" },
   { id: "confirm", label: "人工确认" },
   { id: "history", label: "历史案例" },
-  { id: "sampling", label: "打样对比" },
+  { id: "sampling", label: "方案选品" },
   { id: "trace", label: "确认追溯" },
 ];
 
@@ -96,32 +120,67 @@ function sourceLabel(source: string | null | undefined) {
   return source === "cached-demo-json" ? "缓存 JSON" : source;
 }
 
+function nextSchemeVersion(version: string | null | undefined) {
+  const current = Number(version?.replace(/\D/g, "") || "0");
+  return `V${current + 1}`;
+}
+
 export default function Home() {
   const [state, setState] = useState<WorkbenchState | null>(null);
   const [activeStep, setActiveStep] = useState<StepId>("load");
-  const [form, setForm] = useState<ConfirmedRequirement>(DEFAULT_CONFIRMATION);
+  const [form, setForm] = useState<ConfirmationDraft>(
+    buildConfirmationDraft({ analysis: null, confirmedFields: null }),
+  );
   const [customerDraft, setCustomerDraft] = useState("");
   const [activeAction, setActiveAction] = useState<ActiveAction>(null);
+  const [isTuningOpen, setIsTuningOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     startTransition(async () => {
       const next = await loadWorkbenchAction();
       setState(next);
-      setForm(next.confirmedFields ?? DEFAULT_CONFIRMATION);
+      setForm(buildConfirmationDraft(next));
       setCustomerDraft(next.customerInput);
     });
   }, []);
 
   const done = completedIndex(state);
-  const targetLab = state?.confirmedFields?.targetLab ?? form.targetLab;
+  const confirmedRequirement = confirmationDraftToRequirement(form);
+  const draftTargetLab = draftTargetLabToValue(form);
   const selectedCase = state?.historicalCases.find(
     (item) => item.id === state.selectedCaseId,
+  );
+  const targetLab =
+    draftTargetLab ??
+    state?.confirmedFields?.targetLab ??
+    state?.analysis?.targetLab ??
+    null;
+  const aiTargetLab = state?.analysis?.targetLab ?? null;
+  const referenceLab = selectedCase?.lab ?? aiTargetLab ?? draftTargetLab;
+  const renderMaterial = form.productionMaterial || state?.analysis?.fabric || "";
+  const renderBaseCloth = form.baseCloth || state?.analysis?.baseCloth || "";
+  const livePreviewLab = draftTargetLab
+    ? previewLabForRendering(
+        draftTargetLab,
+        form.illuminant,
+        form.lighting,
+        renderMaterial,
+        renderBaseCloth,
+      )
+    : null;
+  const renderedTargetLab = livePreviewLab ?? targetLab;
+  const riskLabel = lightingRiskLabel(form.illuminant, form.reviewIlluminant);
+  const referenceSourceLabel = selectedCase
+    ? "历史库样本"
+    : "AI 初始提取 fallback";
+  const materialPlan = dyePlanForMaterial(
+    form.productionMaterial || state?.analysis?.fabric || "",
   );
   const selectedSample = state?.sampleAttempts.find(
     (item) => item.id === state.selectedSampleId,
   );
-  const passingSample = state?.sampleAttempts.find((item) => item.passed);
+  const latestSample = state?.sampleAttempts.at(-1);
   const traceReady = Boolean(
     state?.selectedSampleId || state?.status === "fallback",
   );
@@ -148,7 +207,7 @@ export default function Home() {
       try {
         const next = await action();
         setState(next);
-        setForm(next.confirmedFields ?? form);
+        setForm(buildConfirmationDraft(next));
         setCustomerDraft(next.customerInput);
         setActiveStep(
           pendingAction === "analysis" && next.analysisError
@@ -166,7 +225,48 @@ export default function Home() {
   function updateLab(key: keyof LabValue, value: string) {
     setForm((current) => ({
       ...current,
-      targetLab: { ...current.targetLab, [key]: Number(value) },
+      targetLab: { ...current.targetLab, [key]: value },
+    }));
+  }
+
+  function setLabValue(key: keyof LabValue, value: number) {
+    updateLab(key, String(value));
+  }
+
+  function nudgeLab(delta: LabValue) {
+    setForm((current) => adjustDraftLab(current, delta));
+  }
+
+  function updateLighting(
+    key: keyof ConfirmationDraft["lighting"],
+    value: number,
+  ) {
+    setForm((current) => ({
+      ...current,
+      lighting: { ...current.lighting, [key]: value },
+    }));
+  }
+
+  function updateImagePrompt(
+    key: keyof ConfirmationDraft["imagePromptHints"],
+    value: string,
+  ) {
+    setForm((current) => ({
+      ...current,
+      imagePromptHints: { ...current.imagePromptHints, [key]: value },
+    }));
+  }
+
+  function selectProductionMaterial(value: string) {
+    const dyePlan = dyePlanForMaterial(value);
+    setForm((current) => ({
+      ...current,
+      productionMaterial: value,
+      dyeType: dyePlan.dyeType,
+      imagePromptHints: {
+        ...current.imagePromptHints,
+        materialHint: `${value} 对应 ${dyePlan.dyeType}`,
+      },
     }));
   }
 
@@ -223,7 +323,7 @@ export default function Home() {
         <Tabs
           value={activeStep}
           onValueChange={(value) => setActiveStep(value as StepId)}
-          className="mx-auto grid max-w-7xl gap-4 px-4 py-4 lg:grid-cols-[220px_minmax(0,1fr)_320px] lg:px-6"
+          className="mx-auto grid max-w-[1560px] gap-4 px-4 py-4 lg:grid-cols-[200px_minmax(0,1fr)_300px] lg:px-6"
         >
           <aside className="self-start rounded-md border border-[#cfd8d1] bg-[#fbfaf7] p-3">
             <TabsList className="grid h-auto w-full gap-2 bg-transparent p-0">
@@ -275,7 +375,7 @@ export default function Home() {
                 <Textarea
                   id="customer-requirement"
                   value={customerDraft}
-                  placeholder="例如：客户要一批棉针织卫衣布，颜色接近上一季的雾霾蓝，但这次不能偏紫，D65 下看要更稳重。"
+                  placeholder="例如：客户要一批棉针织卫衣布，颜色接近上一季的雾霾蓝，但这次在日照看样下要更稳重。"
                   className="min-h-40 resize-y text-sm leading-6"
                   onChange={(event) => setCustomerDraft(event.target.value)}
                 />
@@ -377,58 +477,147 @@ export default function Home() {
 
             <TabsContent value="confirm" className="mt-0 grid gap-4">
               <SectionTitle
-                title="3. 人工确认缺失字段"
-                description="确认光源、基布、目标 Lab 和 Delta E 阈值后再检索历史案例。"
+                title="3. 确认目标色与方案参数"
+                description="区分 AI 初始提取、人工实时确认和历史库参考；多光源预览只表达趋势，不替代实测光谱。"
               />
-              <div className="grid gap-3 md:grid-cols-2">
-                <Field
-                  label="光源"
-                  value={form.illuminant}
-                  onChange={(value) => setForm({ ...form, illuminant: value })}
-                />
-                <Field
-                  label="基布"
-                  value={form.baseCloth}
-                  onChange={(value) => setForm({ ...form, baseCloth: value })}
-                />
-                <NumberField
-                  label="Lab L"
-                  value={form.targetLab.l}
-                  onChange={(value) => updateLab("l", value)}
-                />
-                <NumberField
-                  label="Lab a"
-                  value={form.targetLab.a}
-                  onChange={(value) => updateLab("a", value)}
-                />
-                <NumberField
-                  label="Lab b"
-                  value={form.targetLab.b}
-                  onChange={(value) => updateLab("b", value)}
-                />
-                <NumberField
-                  label="Delta E 阈值"
-                  value={form.deltaEThreshold}
-                  onChange={(value) =>
-                    setForm({ ...form, deltaEThreshold: Number(value) })
-                  }
-                />
+              <div className="grid gap-4">
+                <div className="grid gap-4">
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <ColorReviewCard
+                      title="AI 初始提取参数"
+                      lab={aiTargetLab}
+                      emptyText="AI 尚未提取目标 Lab"
+                      lines={[
+                        `语义：${state?.analysis?.targetColorName ?? "待分析"}`,
+                        `色彩意图：${state?.analysis?.colorIntent ?? "待分析"}`,
+                        aiTargetLab
+                          ? `AI 原始 Lab：${formatLab(aiTargetLab)}`
+                          : "AI 原始 Lab：待提取",
+                      ]}
+                    />
+                    <ColorReviewCard
+                      title="人工确认实时值"
+                      lab={livePreviewLab}
+                      lighting={form.lighting}
+                      illuminant={form.illuminant}
+                      active
+                      emptyText="待补全目标 Lab"
+                      lines={[
+                        livePreviewLab ? formatLab(livePreviewLab) : "Lab 待补全",
+                        `看样环境：${lightSceneLabel(form.illuminant)} / ${form.lighting.cctKelvin}K`,
+                        `观察：${form.lighting.viewingAngle}° / ${form.lighting.illuminanceLux} lux`,
+                      ]}
+                    />
+                    <ColorReviewCard
+                      title="历史库参考值"
+                      lab={referenceLab}
+                      dashed={!selectedCase}
+                      emptyText="无历史参考"
+                      lines={[
+                        selectedCase
+                          ? selectedCase.name
+                          : "未命中历史库，暂用 AI 初始提取值",
+                        `来源：${referenceSourceLabel}`,
+                        selectedCase?.riskNote ?? "待历史样验证",
+                      ]}
+                    />
+                  </div>
+
+                  <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
+                    <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                      <div>
+                        <p className="font-semibold">实时渲染预览</p>
+                        <p className="mt-1 max-w-2xl text-sm text-[#50616c]">
+                          当前预览绑定 Lab、看样环境、对照环境、色温、光照强度、观察角度、纹理/光泽、生产材质和染料类型。点击进入大屏调试后关闭，会同步回本页和右侧面板。
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        className="w-fit bg-[#1f6f78] text-white hover:bg-[#195d64]"
+                        onClick={() => setIsTuningOpen(true)}
+                      >
+                        打开大屏调试
+                      </Button>
+                    </div>
+                    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
+                      <LivePreviewSurface
+                        lab={livePreviewLab}
+                        baseLab={draftTargetLab}
+                        form={form}
+                      />
+                      <MaterialImpactPanel
+                        form={form}
+                        materialPlan={materialPlan}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 xl:grid-cols-2">
+                  <div className="grid gap-2 rounded-md border border-[#cfd8d1] bg-white p-4">
+                    <p className="font-semibold">确认参数</p>
+                    <ParameterRow label="看样环境" value={`${lightSceneLabel(form.illuminant)} / ${form.lighting.cctKelvin}K / ${form.lighting.illuminanceLux} lux`} />
+                    <ParameterRow label="对照环境" value={lightSceneLabel(form.reviewIlluminant || "")} />
+                    <ParameterRow label="生产材质" value={form.productionMaterial || "待确认"} />
+                    <ParameterRow label="染料" value={form.dyeType || materialPlan.dyeType} />
+                    <ParameterRow label="基布" value={form.baseCloth || "待确认"} />
+                    <ParameterRow label="目标 Lab" value={draftTargetLab ? formatLab(draftTargetLab) : "待补全"} />
+                    <ParameterRow label="容差" value={`${form.deltaEThreshold || "待确认"} / ${form.toleranceMode}`} />
+                    <ParameterRow label="确认备注" value={form.confirmationNote || "未填写"} />
+                  </div>
+                  <Alert className="border-[#d7a64a] bg-[#fffdf5] text-[#533600]">
+                    <AlertTriangle />
+                    <AlertTitle>风险与下一步</AlertTitle>
+                    <AlertDescription>{riskLabel}</AlertDescription>
+                  </Alert>
+                </div>
               </div>
+              <SpectralTuningDialog
+                open={isTuningOpen}
+                onOpenChange={setIsTuningOpen}
+                form={form}
+                setForm={setForm}
+                draftTargetLab={draftTargetLab}
+                livePreviewLab={livePreviewLab}
+                materialPlan={materialPlan}
+                riskLabel={riskLabel}
+                updateLighting={updateLighting}
+                updateImagePrompt={updateImagePrompt}
+                updateLab={updateLab}
+                setLabValue={setLabValue}
+                nudgeLab={nudgeLab}
+                selectProductionMaterial={selectProductionMaterial}
+              />
+              {!confirmedRequirement ? (
+                <Alert className="border-[#d7a64a] bg-[#fff7df] text-[#6f4d00]">
+                  <AlertTriangle />
+                  <AlertTitle>仍有参数待确认</AlertTitle>
+                  <AlertDescription>
+                    请确认光源、基布、目标 Lab 和 Delta E 阈值后再进入历史案例。
+                  </AlertDescription>
+                </Alert>
+              ) : null}
               <Button
                 className="w-fit bg-[#1f6f78] text-white hover:bg-[#195d64]"
-                disabled={isBusy}
+                disabled={isBusy || !confirmedRequirement}
                 onClick={() =>
-                  run(
-                    () => confirmRequirementAction(state?.orderId ?? null, form),
-                    "history",
-                    "confirm",
-                  )
+                  confirmedRequirement
+                    ? run(
+                        () =>
+                          confirmRequirementAction(
+                            state?.orderId ?? null,
+                            confirmedRequirement,
+                          ),
+                        "history",
+                        "confirm",
+                      )
+                    : undefined
                 }
               >
                 <ActionIcon active={activeAction === "confirm"}>
                   <CheckCircle2 />
                 </ActionIcon>
-                {activeAction === "confirm" ? "正在确认..." : "确认需求字段"}
+                {activeAction === "confirm" ? "正在确认..." : "确认方案参数"}
               </Button>
             </TabsContent>
 
@@ -515,8 +704,8 @@ export default function Home() {
 
             <TabsContent value="sampling" className="mt-0 grid gap-4">
               <SectionTitle
-                title="5. 打样 Lab 与 Delta E 对比"
-                description="V1 未达标时停留在本步骤；V2 达标后必须人工采用才能进入追溯。"
+                title="5. 方案选品"
+                description="把每次人工确认后的实时渲染成品保存为 V1、V2、V3 方案，可继续调试，也可直接选为最终方案。"
               />
               <div className="flex flex-wrap items-center gap-2">
                 <Button
@@ -534,37 +723,20 @@ export default function Home() {
                     <FlaskConical />
                   </ActionIcon>
                   {activeAction === "sampling"
-                    ? "对比中..."
+                    ? "生成中..."
                     : state?.sampleAttempts.length
-                      ? "继续打样"
-                      : "对比打样结果"}
+                      ? `保存 ${nextSchemeVersion(latestSample?.version)} 方案`
+                      : "保存 V1 方案"}
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={isBusy}
+                  onClick={() => setActiveStep("confirm")}
+                >
+                  回到人工确认继续调试
                 </Button>
                 {!state?.selectedCaseId ? (
                   <Badge variant="outline">请先选择参考案例</Badge>
-                ) : null}
-                {passingSample && !state?.selectedSampleId ? (
-                  <Button
-                    variant="outline"
-                    disabled={isBusy}
-                    onClick={() =>
-                      run(
-                        () =>
-                          adoptSampleAction(
-                            state?.orderId ?? null,
-                            passingSample.id,
-                          ),
-                        "trace",
-                        "adopt-sample",
-                      )
-                    }
-                  >
-                    <ActionIcon active={activeAction === "adopt-sample"}>
-                      <CheckCircle2 />
-                    </ActionIcon>
-                    {activeAction === "adopt-sample"
-                      ? "正在采用..."
-                      : "采用达标样版"}
-                  </Button>
                 ) : null}
               </div>
               <div className="grid gap-3 md:grid-cols-2">
@@ -579,20 +751,45 @@ export default function Home() {
                   >
                     <CardHeader className="flex-row items-center justify-between px-3">
                       <CardTitle className="text-base">{item.version}</CardTitle>
-                      <Badge
-                        className={
-                          item.passed
-                            ? "border-transparent bg-[#d9efe4] text-[#0f6842]"
-                            : "border-transparent bg-[#f8ded7] text-[#9a3412]"
-                        }
-                      >
-                        {item.passed ? "达标" : "未达标"}
+                      <Badge className="border-transparent bg-[#d9efe4] text-[#0f6842]">
+                        可选方案
                       </Badge>
                     </CardHeader>
-                    <CardContent className="grid gap-1 px-3 text-sm">
-                      <p>{formatLab(item.lab)}</p>
-                      <p>Delta E {item.deltaE.toFixed(1)}</p>
+                    <CardContent className="grid gap-3 px-3 text-sm">
+                      <div className="grid gap-2">
+                        <SampleSwatch
+                          label={`${item.version} 成品预览`}
+                          lab={item.targetLab}
+                        />
+                      </div>
+                      {item.confirmationSummary ? (
+                        <p className="text-[#50616c]">
+                          推荐参数：{item.confirmationSummary}
+                        </p>
+                      ) : null}
                       <p className="text-[#50616c]">{item.deviation}</p>
+                      <Button
+                        className="w-fit bg-[#1f6f78] text-white hover:bg-[#195d64]"
+                        disabled={isBusy}
+                        onClick={() =>
+                          run(
+                            () =>
+                              adoptSampleAction(
+                                state?.orderId ?? null,
+                                item.id,
+                              ),
+                            "trace",
+                            "adopt-sample",
+                          )
+                        }
+                      >
+                        <ActionIcon active={activeAction === "adopt-sample"}>
+                          <CheckCircle2 />
+                        </ActionIcon>
+                        {item.id === state?.selectedSampleId
+                          ? "已选为最终方案"
+                          : "选为最终方案"}
+                      </Button>
                     </CardContent>
                   </Card>
                 ))}
@@ -600,9 +797,9 @@ export default function Home() {
               {state?.sampleAttempts.length && !state.selectedSampleId ? (
                 <Alert className="border-[#cfd8d1]">
                   <AlertTriangle />
-                  <AlertTitle>追溯入口未开放</AlertTitle>
+                  <AlertTitle>请选择最终方案</AlertTitle>
                   <AlertDescription>
-                    只有采用达标样版后，才能进入确认卡和追溯时间线。
+                    可以回到人工确认继续调试并保存下一版，也可以直接选择当前任一方案进入追溯。
                   </AlertDescription>
                 </Alert>
               ) : null}
@@ -611,7 +808,7 @@ export default function Home() {
             <TabsContent value="trace" className="mt-0 grid gap-4">
               <SectionTitle
                 title="6. 客户确认卡与追溯"
-                description="汇总订单、AI 分析、人工确认、参考案例、达标样版和追溯事件。"
+                description="汇总订单、AI 分析、人工确认、参考案例、最终方案和追溯事件。"
               />
               <div className="rounded-md border border-[#cfd8d1] bg-[#f8faf9] p-4">
                 <h3 className="font-semibold">报告预览</h3>
@@ -620,7 +817,11 @@ export default function Home() {
                   {state?.analysis?.avoidHueRisk ?? "待补充风险"}。
                 </p>
                 <p className="text-sm">
-                  条件：{state?.confirmedFields?.illuminant} /{" "}
+                  条件：{lightSceneLabel(state?.confirmedFields?.illuminant ?? "")} /{" "}
+                  {state?.confirmedFields?.reviewIlluminant
+                    ? lightSceneLabel(state.confirmedFields.reviewIlluminant)
+                    : "未设置对照环境"} /{" "}
+                  {state?.confirmedFields?.productionMaterial ?? "待确认材质"} /{" "}
                   {state?.confirmedFields?.baseCloth} / Delta E{" "}
                   {state?.confirmedFields?.deltaEThreshold}
                 </p>
@@ -628,8 +829,11 @@ export default function Home() {
                   参考案例：{selectedCase?.name ?? "未选择"}
                 </p>
                 <p className="text-sm">
-                  达标样版：
-                  {selectedSample?.version ?? passingSample?.version ?? "未采用"}
+                  确认方案：
+                  {selectedSample?.version ?? "未采用"}
+                  {selectedSample
+                    ? ` / ${formatLab(selectedSample.lab)}`
+                    : ""}
                 </p>
               </div>
               <div className="grid gap-2">
@@ -651,20 +855,30 @@ export default function Home() {
               <CardHeader className="px-3">
                 <CardTitle className="text-base">当前需求集合</CardTitle>
               </CardHeader>
-              <CardContent className="px-3 text-sm text-[#50616c]">
+              <CardContent className="grid gap-2 px-3 text-sm text-[#50616c]">
+                <p>任务编号：{state?.taskNo ?? "待生成"}</p>
+                <p>客户名：{state?.customerName ?? "待填写"}</p>
                 <span className="line-clamp-6">{state?.customerInput}</span>
               </CardContent>
             </Card>
             <Card className="gap-3 rounded-md py-3 shadow-none">
               <CardHeader className="px-3">
-                <CardTitle className="text-base">目标 Lab 色块</CardTitle>
+                <CardTitle className="text-base">实时目标 Lab</CardTitle>
               </CardHeader>
               <CardContent className="px-3">
-                <div
-                  className="h-24 rounded-md border border-[#b8aea2]"
-                  style={{ backgroundColor: labToCssColor(targetLab) }}
-                />
-                <p className="mt-2 text-sm">{formatLab(targetLab)}</p>
+                {renderedTargetLab ? (
+                  <>
+                    <div
+                      className="h-24 rounded-md border border-[#b8aea2]"
+                      style={previewSurfaceStyle(renderedTargetLab, form.lighting)}
+                    />
+                    <p className="mt-2 text-sm">{formatLab(renderedTargetLab)}</p>
+                  </>
+                ) : (
+                  <div className="grid h-24 place-items-center rounded-md border border-dashed border-[#b8aea2] bg-[#f8faf9] text-sm text-[#50616c]">
+                    待补充目标 Lab
+                  </div>
+                )}
               </CardContent>
             </Card>
             <Card className="gap-3 rounded-md py-3 shadow-none">
@@ -672,8 +886,20 @@ export default function Home() {
                 <CardTitle className="text-base">当前决策</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-2 px-3 text-sm text-[#50616c]">
+                <p>AI 目标：{state?.analysis?.targetColorName ?? "待分析"}</p>
+                <p>面料：{state?.analysis?.fabric ?? "待分析"}</p>
+                <p>看样环境：{lightSceneLabel(form.illuminant)}</p>
+                <p>对照环境：{lightSceneLabel(form.reviewIlluminant || "")}</p>
+                <p>生产材质：{form.productionMaterial || "待确认"}</p>
+                <p>染料：{form.dyeType || materialPlan.dyeType}</p>
+                <p>基布：{form.baseCloth || "待确认"}</p>
+                <p>
+                  容差：{form.deltaEThreshold || "待确认"} /{" "}
+                  {form.toleranceMode}
+                </p>
+                <p>参考来源：{referenceSourceLabel}</p>
                 <p>参考案例：{selectedCase?.name ?? "待选择"}</p>
-                <p>打样版本：{selectedSample?.version ?? "待采用"}</p>
+                <p>最终方案：{selectedSample?.version ?? "待选择"}</p>
                 <p>AI 来源：{sourceLabel(state?.analysisSource)}</p>
               </CardContent>
             </Card>
@@ -682,9 +908,8 @@ export default function Home() {
                 <CardTitle className="text-base">风险提示</CardTitle>
               </CardHeader>
               <CardContent className="px-3 text-sm text-[#8a4a1f]">
-                {state?.analysis?.avoidHueRisk ??
-                  state?.analysisError ??
-                  "运行 AI 分析后显示风险。"}
+                {state?.analysisError ??
+                  `${state?.analysis?.avoidHueRisk ?? "运行 AI 分析后显示风险。"} ${riskLabel}`}
               </CardContent>
             </Card>
             <Separator />
@@ -805,6 +1030,718 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
+function ColorReviewCard({
+  title,
+  lab,
+  lighting,
+  illuminant,
+  lines,
+  emptyText,
+  active,
+  dashed,
+}: {
+  title: string;
+  lab: LabValue | null | undefined;
+  lighting?: ConfirmationDraft["lighting"];
+  illuminant?: string;
+  lines: string[];
+  emptyText: string;
+  active?: boolean;
+  dashed?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-md border bg-white p-3 ${
+        active ? "border-[#1f6f78] ring-2 ring-[#d9eeee]" : "border-[#cfd8d1]"
+      }`}
+    >
+      <p className="text-xs font-semibold uppercase text-[#44646d]">{title}</p>
+      {lab ? (
+        <div
+          className={`my-2 h-24 rounded-md border ${
+            dashed ? "border-dashed" : ""
+          } border-[#b8aea2]`}
+          style={
+            lighting
+              ? previewSurfaceStyle(lab, lighting)
+              : { backgroundColor: labToCssColor(lab) }
+          }
+        />
+      ) : (
+        <div className="my-2 grid h-24 place-items-center rounded-md border border-dashed border-[#b8aea2] bg-[#f8faf9] text-xs text-[#50616c]">
+          {emptyText}
+        </div>
+      )}
+      <div className="grid gap-1 text-sm text-[#33424f]">
+        {lighting ? (
+          <p className="font-medium">{lightSceneLabel(illuminant ?? "")} 渲染成品</p>
+        ) : null}
+        {lines.map((line) => (
+          <p key={line} className="break-words">
+            {line}
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SampleSwatch({
+  label,
+  lab,
+}: {
+  label: string;
+  lab: LabValue | null | undefined;
+}) {
+  return (
+    <div className="grid gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfaf7] p-2">
+      <div
+        className="h-14 rounded border border-[#b8aea2]"
+        style={{ backgroundColor: lab ? labToCssColor(lab) : "#eef1ec" }}
+      />
+      <div>
+        <p className="text-xs font-semibold text-[#33424f]">{label}</p>
+        <p className="text-xs text-[#50616c]">
+          {lab ? formatLab(lab) : "待生成"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function LivePreviewSurface({
+  lab,
+  baseLab,
+  form,
+  large,
+}: {
+  lab: LabValue | null | undefined;
+  baseLab: LabValue | null | undefined;
+  form: ConfirmationDraft;
+  large?: boolean;
+}) {
+  const lux = form.lighting.illuminanceLux;
+  const cct = form.lighting.cctKelvin;
+  const angle = form.lighting.viewingAngle;
+  const delta = lab && baseLab ? diffLab(baseLab, lab) : null;
+
+  return (
+    <div className="grid gap-3">
+      <div
+        className={`relative overflow-hidden rounded-md border border-[#b8aea2] ${
+          large ? "min-h-[420px]" : "min-h-[260px]"
+        }`}
+        style={lab ? previewSurfaceStyle(lab, form.lighting) : undefined}
+      >
+        <div className="absolute left-3 top-3 rounded-md border border-white/55 bg-white/82 px-3 py-2 text-sm text-[#18222c] shadow-sm">
+          <p className="font-semibold">{lightSceneLabel(form.illuminant)} 实时预览</p>
+          <p className="text-xs text-[#50616c]">
+            {lab ? formatLab(lab) : "待补全 Lab"}
+          </p>
+        </div>
+        <div className="absolute right-3 top-3 grid gap-1 rounded-md border border-white/55 bg-white/82 p-2 text-xs text-[#33424f] shadow-sm">
+          <span>绑定色块</span>
+          <span
+            className="h-8 w-20 rounded border border-[#b8aea2]"
+            style={{ backgroundColor: lab ? labToCssColor(lab) : "#eef1ec" }}
+          />
+        </div>
+        <div className="absolute bottom-3 left-3 right-3 grid gap-2 rounded-md border border-white/55 bg-white/84 p-3 text-xs text-[#33424f] shadow-sm sm:grid-cols-4">
+          <Metric label="色温" value={`${cct}K`} />
+          <Metric label="光照" value={`${lux} lux`} />
+          <Metric label="角度" value={`${angle}°`} />
+          <Metric label="纹理/光泽" value={`${form.lighting.textureGloss}%`} />
+        </div>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-3">
+        <DeltaMetric label="L 亮度变化" value={delta?.l ?? 0} />
+        <DeltaMetric label="a 红绿变化" value={delta?.a ?? 0} />
+        <DeltaMetric label="b 黄蓝变化" value={delta?.b ?? 0} />
+      </div>
+    </div>
+  );
+}
+
+function previewSurfaceStyle(
+  lab: LabValue,
+  lighting: ConfirmationDraft["lighting"],
+): CSSProperties {
+  const gloss = lighting.textureGloss;
+  const warmCool =
+    lighting.cctKelvin < 5600
+      ? `rgba(255, 188, 84, ${Math.min(0.28, (5600 - lighting.cctKelvin) / 10000)})`
+      : `rgba(80, 164, 255, ${Math.min(0.22, (lighting.cctKelvin - 5600) / 12000)})`;
+  const shade = Math.max(0.02, Math.min(0.13, 1 - lighting.illuminanceLux / 2600));
+  const shine = Math.min(0.22, gloss / 260);
+
+  return {
+    backgroundColor: labToCssColor(lab),
+    backgroundImage: [
+      `radial-gradient(circle at ${28 + gloss * 0.55}% 22%, rgba(255,255,255,${shine}) 0, rgba(255,255,255,0) 34%)`,
+      `linear-gradient(${lighting.viewingAngle}deg, rgba(255,255,255,0.1), rgba(0,0,0,${shade}))`,
+      `linear-gradient(0deg, ${warmCool}, ${warmCool})`,
+      "repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 2px, rgba(0,0,0,0.018) 2px 5px)",
+    ].join(", "),
+  };
+}
+
+function MaterialImpactPanel({
+  form,
+  materialPlan,
+}: {
+  form: ConfirmationDraft;
+  materialPlan: ReturnType<typeof dyePlanForMaterial>;
+}) {
+  const glossImpact = form.lighting.textureGloss;
+  const materialImpact = materialVisualScore(form.productionMaterial);
+  const baseImpact = baseClothVisualScore(form.baseCloth);
+  const angleImpact = Math.round(Math.abs(form.lighting.viewingAngle - 45) * 1.4);
+  const lightImpact = Math.round(
+    Math.abs(form.lighting.illuminanceLux - 1000) / 18,
+  );
+
+  return (
+    <div className="grid gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfaf7] p-3 text-sm">
+      <div>
+        <p className="font-semibold">材质与染料影响</p>
+        <p className="text-xs text-[#50616c]">
+          {form.productionMaterial || materialPlan.materialFamily} /{" "}
+          {form.dyeType || materialPlan.dyeType}
+        </p>
+      </div>
+      <ImpactBar label="材质吸收" value={materialImpact} />
+      <ImpactBar label="基布底色" value={baseImpact} />
+      <ImpactBar label="纹理反光" value={glossImpact} />
+      <ImpactBar label="观察角差" value={angleImpact} />
+      <ImpactBar label="光照偏离" value={lightImpact} />
+    </div>
+  );
+}
+
+function materialVisualScore(material: string) {
+  if (/涤棉|涤.*棉|棉.*涤/.test(material)) return 58;
+  if (/(纯棉|人棉|莫代尔|棉)/.test(material)) return 48;
+  if (/锦纶/.test(material)) return 42;
+  if (/羊毛/.test(material)) return 64;
+  if (/(晴纶|腈纶)/.test(material)) return 55;
+  return 30;
+}
+
+function baseClothVisualScore(baseCloth: string) {
+  if (baseCloth === "漂白布") return 24;
+  if (baseCloth === "本白布") return 42;
+  if (baseCloth === "本白汗布") return 48;
+  if (baseCloth === "本白罗纹") return 54;
+  if (baseCloth === "客户原布") return 68;
+  return 35;
+}
+
+function SpectralTuningDialog({
+  open,
+  onOpenChange,
+  form,
+  setForm,
+  draftTargetLab,
+  livePreviewLab,
+  materialPlan,
+  riskLabel,
+  updateLighting,
+  updateImagePrompt,
+  updateLab,
+  setLabValue,
+  nudgeLab,
+  selectProductionMaterial,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  form: ConfirmationDraft;
+  setForm: Dispatch<SetStateAction<ConfirmationDraft>>;
+  draftTargetLab: LabValue | null;
+  livePreviewLab: LabValue | null;
+  materialPlan: ReturnType<typeof dyePlanForMaterial>;
+  riskLabel: string;
+  updateLighting: (
+    key: keyof ConfirmationDraft["lighting"],
+    value: number,
+  ) => void;
+  updateImagePrompt: (
+    key: keyof ConfirmationDraft["imagePromptHints"],
+    value: string,
+  ) => void;
+  updateLab: (key: keyof LabValue, value: string) => void;
+  setLabValue: (key: keyof LabValue, value: number) => void;
+  nudgeLab: (delta: LabValue) => void;
+  selectProductionMaterial: (value: string) => void;
+}) {
+  const materials = ["纯棉", "人棉", "莫代尔", "锦纶", "涤棉混纺", "羊毛", "晴纶"];
+  const baseCloths = ["本白布", "漂白布", "本白汗布", "本白罗纹", "客户原布"];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        showCloseButton={false}
+        className="flex max-h-[92vh] w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] flex-col overflow-hidden border-[#91b8b6] bg-[#f8faf9] p-0 text-[#18222c] sm:max-w-[calc(100vw-48px)] xl:max-w-[1400px]"
+      >
+        <DialogHeader className="border-b border-[#cfd8d1] bg-[#fbfaf7] px-5 py-4 pr-5 text-left">
+          <DialogTitle>大屏调试参数与实时渲染</DialogTitle>
+          <DialogDescription className="mt-1 text-[#50616c]">
+            这里调整的 Lab、光源、光度、材质和图片提示词，会直接同步到确认页和右侧面板。
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid min-h-0 flex-1 items-start gap-4 overflow-y-auto p-5 lg:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="grid min-w-0 gap-4">
+          <LivePreviewSurface
+            lab={livePreviewLab}
+            baseLab={draftTargetLab}
+            form={form}
+            large
+          />
+          <div className="grid gap-3 md:grid-cols-2">
+            <MaterialImpactPanel form={form} materialPlan={materialPlan} />
+            <Alert className="border-[#d7a64a] bg-[#fffdf5] text-[#533600]">
+              <AlertTriangle />
+              <AlertTitle>同色异谱风险</AlertTitle>
+              <AlertDescription>{riskLabel}</AlertDescription>
+            </Alert>
+          </div>
+        </div>
+
+        <div className="grid min-w-0 gap-4">
+          <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
+            <LightChoiceGroup
+              label="看样环境"
+              value={form.illuminant}
+              onSelect={(value) =>
+                setForm((current) => ({ ...current, illuminant: value }))
+              }
+            />
+            <LightChoiceGroup
+              label="对照环境"
+              value={form.reviewIlluminant}
+              onSelect={(value) =>
+                setForm((current) => ({ ...current, reviewIlluminant: value }))
+              }
+            />
+            <LightSlider
+              label="模拟日光色温 CCT"
+              value={form.lighting.cctKelvin}
+              min={2700}
+              max={9000}
+              unit="K"
+              onChange={(value) => updateLighting("cctKelvin", value)}
+            />
+            <LightSlider
+              label="光照强度"
+              value={form.lighting.illuminanceLux}
+              min={100}
+              max={2000}
+              unit="lux"
+              onChange={(value) => updateLighting("illuminanceLux", value)}
+            />
+            <LightSlider
+              label="观察角度"
+              value={form.lighting.viewingAngle}
+              min={0}
+              max={90}
+              unit="°"
+              onChange={(value) => updateLighting("viewingAngle", value)}
+            />
+            <LightSlider
+              label="纹理/光泽影响"
+              value={form.lighting.textureGloss}
+              min={0}
+              max={100}
+              unit="%"
+              onChange={(value) => updateLighting("textureGloss", value)}
+            />
+          </div>
+
+          <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
+            <ChoiceGroup
+              label="生产材质"
+              value={form.productionMaterial}
+              options={materials}
+              onSelect={selectProductionMaterial}
+            />
+            <ChoiceGroup
+              label="基布"
+              value={form.baseCloth}
+              options={baseCloths}
+              onSelect={(value) =>
+                setForm((current) => ({ ...current, baseCloth: value }))
+              }
+            />
+            <Field
+              label="染料类型"
+              value={form.dyeType || materialPlan.dyeType}
+              onChange={(value) =>
+                setForm((current) => ({ ...current, dyeType: value }))
+              }
+            />
+          </div>
+
+          <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
+            <div className="grid gap-2 sm:grid-cols-3">
+              <NumberField
+                label="Lab L"
+                value={form.targetLab.l}
+                onChange={(value) => updateLab("l", value)}
+              />
+              <NumberField
+                label="Lab a"
+                value={form.targetLab.a}
+                onChange={(value) => updateLab("a", value)}
+              />
+              <NumberField
+                label="Lab b"
+                value={form.targetLab.b}
+                onChange={(value) => updateLab("b", value)}
+              />
+            </div>
+            {draftTargetLab ? (
+              <>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                  <NudgeButton onClick={() => nudgeLab({ l: -1, a: 0, b: 0 })}>
+                    更深
+                  </NudgeButton>
+                  <NudgeButton onClick={() => nudgeLab({ l: 1, a: 0, b: 0 })}>
+                    更浅
+                  </NudgeButton>
+                  <NudgeButton onClick={() => nudgeLab({ l: 0, a: -1, b: 0 })}>
+                    少红
+                  </NudgeButton>
+                  <NudgeButton onClick={() => nudgeLab({ l: 0, a: 0, b: -1 })}>
+                    更蓝
+                  </NudgeButton>
+                  <NudgeButton onClick={() => nudgeLab({ l: 0, a: 0, b: 1 })}>
+                    少蓝
+                  </NudgeButton>
+                </div>
+                <LabSlider
+                  label="亮度 L"
+                  hint="更深 / 更浅"
+                  min={0}
+                  max={100}
+                  value={draftTargetLab.l}
+                  onChange={(value) => setLabValue("l", value)}
+                />
+                <LabSlider
+                  label="红绿 a"
+                  hint="偏绿 / 偏红"
+                  min={-60}
+                  max={60}
+                  value={draftTargetLab.a}
+                  onChange={(value) => setLabValue("a", value)}
+                />
+                <LabSlider
+                  label="黄蓝 b"
+                  hint="偏蓝 / 偏黄"
+                  min={-60}
+                  max={80}
+                  value={draftTargetLab.b}
+                  onChange={(value) => setLabValue("b", value)}
+                />
+              </>
+            ) : null}
+          </div>
+
+          <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
+            <ChoiceGroup
+              label="Delta E 阈值"
+              value={form.deltaEThreshold}
+              options={["1.0", "1.2", "1.5"]}
+              onSelect={(value) =>
+                setForm((current) => ({ ...current, deltaEThreshold: value }))
+              }
+            />
+            <ChoiceGroup
+              label="容差模式"
+              value={form.toleranceMode}
+              options={["deltaE76", "cmc"]}
+              onSelect={(value) =>
+                setForm((current) => ({
+                  ...current,
+                  toleranceMode: value as ConfirmationDraft["toleranceMode"],
+                }))
+              }
+            />
+            <Field
+              label="确认备注"
+              value={form.confirmationNote}
+              onChange={(value) =>
+                setForm((current) => ({ ...current, confirmationNote: value }))
+              }
+            />
+            <div className="grid gap-2">
+              <Label>图片内容提示词</Label>
+              <Textarea
+                value={form.imagePromptHints.colorDescription}
+                onChange={(event) =>
+                  updateImagePrompt("colorDescription", event.target.value)
+                }
+              />
+              <Textarea
+                value={form.imagePromptHints.imageRisk}
+                onChange={(event) =>
+                  updateImagePrompt("imageRisk", event.target.value)
+                }
+              />
+              <Textarea
+                value={form.imagePromptHints.materialHint}
+                onChange={(event) =>
+                  updateImagePrompt("materialHint", event.target.value)
+                }
+              />
+              <Textarea
+                value={form.imagePromptHints.followUpSuggestion}
+                onChange={(event) =>
+                  updateImagePrompt("followUpSuggestion", event.target.value)
+                }
+              />
+            </div>
+          </div>
+        </div>
+        </div>
+        <DialogFooter className="border-t border-[#cfd8d1] bg-[#fbfaf7] px-5 py-3">
+          <DialogClose asChild>
+            <Button
+              type="button"
+              className="bg-[#1f6f78] text-white hover:bg-[#195d64]"
+            >
+              完成调试
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[#50616c]">{label}</p>
+      <p className="font-semibold">{value}</p>
+    </div>
+  );
+}
+
+function DeltaMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-md border border-[#cfd8d1] bg-white p-3 text-sm">
+      <p className="text-xs text-[#50616c]">{label}</p>
+      <p className="mt-1 font-semibold">{formatSigned(value)}</p>
+    </div>
+  );
+}
+
+function ImpactBar({ label, value }: { label: string; value: number }) {
+  const safeValue = Math.max(0, Math.min(100, value));
+
+  return (
+    <div className="grid gap-1">
+      <div className="flex justify-between text-xs text-[#50616c]">
+        <span>{label}</span>
+        <span>{safeValue}%</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded bg-[#dfe8e3]">
+        <div
+          className="h-full rounded bg-[#1f6f78]"
+          style={{ width: `${safeValue}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function diffLab(base: LabValue, next: LabValue) {
+  return {
+    l: Number((next.l - base.l).toFixed(1)),
+    a: Number((next.a - base.a).toFixed(1)),
+    b: Number((next.b - base.b).toFixed(1)),
+  };
+}
+
+function formatSigned(value: number) {
+  return value > 0 ? `+${value.toFixed(1)}` : value.toFixed(1);
+}
+
+function NudgeButton({
+  children,
+  onClick,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <Button type="button" variant="outline" size="sm" onClick={onClick}>
+      {children}
+    </Button>
+  );
+}
+
+function LightSlider({
+  label,
+  value,
+  min,
+  max,
+  unit,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  unit: string;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="grid gap-2 text-sm">
+      <div className="flex items-center justify-between gap-3">
+        <Label>{label}</Label>
+        <span className="text-xs font-medium text-[#33424f]">
+          {value}
+          {unit}
+        </span>
+      </div>
+      <Slider
+        min={min}
+        max={max}
+        step={unit === "K" ? 100 : 1}
+        value={[value]}
+        onValueChange={([next]) => onChange(next)}
+        aria-label={label}
+      />
+    </div>
+  );
+}
+
+function ParameterRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[76px_minmax(0,1fr)] items-center gap-2">
+      <span className="text-sm font-semibold text-[#18222c]">{label}</span>
+      <span className="min-h-9 rounded-md border border-[#cfd8d1] bg-white px-3 py-2 text-sm text-[#18222c]">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function LabSlider({
+  label,
+  hint,
+  min,
+  max,
+  value,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  min: number;
+  max: number;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="grid gap-2 text-sm">
+      <div className="flex items-center justify-between gap-3">
+        <Label>{label}</Label>
+        <span className="text-xs text-[#50616c]">{hint}</span>
+      </div>
+      <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3">
+        <span className="text-right text-xs text-[#50616c]">{min}</span>
+        <Slider
+          min={min}
+          max={max}
+          step={0.1}
+          value={[value]}
+          onValueChange={([next]) => onChange(next)}
+          aria-label={label}
+        />
+        <span className="text-xs text-[#50616c]">{max}</span>
+      </div>
+      <Input
+        type="number"
+        step="0.1"
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+      />
+    </div>
+  );
+}
+
+function ChoiceGroup({
+  label,
+  value,
+  options,
+  onSelect,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onSelect: (value: string) => void;
+}) {
+  return (
+    <div className="grid gap-2 text-sm">
+      <Label>{label}</Label>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <Button
+            key={option}
+            type="button"
+            variant={value === option ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => onSelect(option)}
+          >
+            {option}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const lightChoices = [
+  { value: "D65", label: "日照看样", hint: "D65" },
+  { value: "D50", label: "柔和看样灯", hint: "D50" },
+  { value: "TL84/F11", label: "商场/办公室光", hint: "TL84" },
+  { value: "A 光源", label: "室内暖光", hint: "A" },
+  { value: "LED-B3", label: "LED门店光", hint: "B3" },
+  { value: "ID65", label: "冷白日光", hint: "ID65" },
+];
+
+function LightChoiceGroup({
+  label,
+  value,
+  onSelect,
+}: {
+  label: string;
+  value: string;
+  onSelect: (value: string) => void;
+}) {
+  return (
+    <div className="grid gap-2 text-sm">
+      <Label>{label}</Label>
+      <div className="flex flex-wrap gap-2">
+        {lightChoices.map((option) => (
+          <Button
+            key={option.value}
+            type="button"
+            variant={value === option.value ? "secondary" : "outline"}
+            size="sm"
+            className="h-auto flex-col items-start gap-0 px-3 py-2 text-left"
+            onClick={() => onSelect(option.value)}
+          >
+            <span>{option.label}</span>
+            <span className="text-xs opacity-70">{option.hint}</span>
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Field({
   label,
   value,
@@ -828,7 +1765,7 @@ function NumberField({
   onChange,
 }: {
   label: string;
-  value: number;
+  value: string;
   onChange: (value: string) => void;
 }) {
   return (

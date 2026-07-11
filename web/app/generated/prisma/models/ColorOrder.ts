@@ -26,31 +26,60 @@ export type AggregateColorOrder = {
 
 export type ColorOrderMinAggregateOutputType = {
   id: string | null
+  taskNo: string | null
+  customerName: string | null
   customerInput: string | null
+  requestedColor: string | null
+  colorIntent: string | null
+  productionMaterial: string | null
+  baseCloth: string | null
+  dyeType: string | null
   status: string | null
   selectedCaseId: string | null
   selectedSampleId: string | null
+  finalSchemeId: string | null
+  finalConfirmedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type ColorOrderMaxAggregateOutputType = {
   id: string | null
+  taskNo: string | null
+  customerName: string | null
   customerInput: string | null
+  requestedColor: string | null
+  colorIntent: string | null
+  productionMaterial: string | null
+  baseCloth: string | null
+  dyeType: string | null
   status: string | null
   selectedCaseId: string | null
   selectedSampleId: string | null
+  finalSchemeId: string | null
+  finalConfirmedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type ColorOrderCountAggregateOutputType = {
   id: number
+  taskNo: number
+  customerName: number
   customerInput: number
+  requestedColor: number
+  colorIntent: number
+  productionMaterial: number
+  baseCloth: number
+  dyeType: number
+  targetLab: number
+  finalRenderLab: number
   status: number
   confirmedFields: number
   selectedCaseId: number
   selectedSampleId: number
+  finalSchemeId: number
+  finalConfirmedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -59,31 +88,60 @@ export type ColorOrderCountAggregateOutputType = {
 
 export type ColorOrderMinAggregateInputType = {
   id?: true
+  taskNo?: true
+  customerName?: true
   customerInput?: true
+  requestedColor?: true
+  colorIntent?: true
+  productionMaterial?: true
+  baseCloth?: true
+  dyeType?: true
   status?: true
   selectedCaseId?: true
   selectedSampleId?: true
+  finalSchemeId?: true
+  finalConfirmedAt?: true
   createdAt?: true
   updatedAt?: true
 }
 
 export type ColorOrderMaxAggregateInputType = {
   id?: true
+  taskNo?: true
+  customerName?: true
   customerInput?: true
+  requestedColor?: true
+  colorIntent?: true
+  productionMaterial?: true
+  baseCloth?: true
+  dyeType?: true
   status?: true
   selectedCaseId?: true
   selectedSampleId?: true
+  finalSchemeId?: true
+  finalConfirmedAt?: true
   createdAt?: true
   updatedAt?: true
 }
 
 export type ColorOrderCountAggregateInputType = {
   id?: true
+  taskNo?: true
+  customerName?: true
   customerInput?: true
+  requestedColor?: true
+  colorIntent?: true
+  productionMaterial?: true
+  baseCloth?: true
+  dyeType?: true
+  targetLab?: true
+  finalRenderLab?: true
   status?: true
   confirmedFields?: true
   selectedCaseId?: true
   selectedSampleId?: true
+  finalSchemeId?: true
+  finalConfirmedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -163,11 +221,22 @@ export type ColorOrderGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 
 export type ColorOrderGroupByOutputType = {
   id: string
+  taskNo: string | null
+  customerName: string
   customerInput: string
+  requestedColor: string | null
+  colorIntent: string | null
+  productionMaterial: string | null
+  baseCloth: string | null
+  dyeType: string | null
+  targetLab: runtime.JsonValue | null
+  finalRenderLab: runtime.JsonValue | null
   status: string
   confirmedFields: runtime.JsonValue | null
   selectedCaseId: string | null
   selectedSampleId: string | null
+  finalSchemeId: string | null
+  finalConfirmedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: ColorOrderCountAggregateOutputType | null
@@ -195,56 +264,103 @@ export type ColorOrderWhereInput = {
   OR?: Prisma.ColorOrderWhereInput[]
   NOT?: Prisma.ColorOrderWhereInput | Prisma.ColorOrderWhereInput[]
   id?: Prisma.StringFilter<"ColorOrder"> | string
+  taskNo?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  customerName?: Prisma.StringFilter<"ColorOrder"> | string
   customerInput?: Prisma.StringFilter<"ColorOrder"> | string
+  requestedColor?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  colorIntent?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  productionMaterial?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  baseCloth?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  dyeType?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  targetLab?: Prisma.JsonNullableFilter<"ColorOrder">
+  finalRenderLab?: Prisma.JsonNullableFilter<"ColorOrder">
   status?: Prisma.StringFilter<"ColorOrder"> | string
   confirmedFields?: Prisma.JsonNullableFilter<"ColorOrder">
   selectedCaseId?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
   selectedSampleId?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  finalSchemeId?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  finalConfirmedAt?: Prisma.DateTimeNullableFilter<"ColorOrder"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ColorOrder"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ColorOrder"> | Date | string
   analysis?: Prisma.XOR<Prisma.AnalysisResultNullableScalarRelationFilter, Prisma.AnalysisResultWhereInput> | null
+  historicalCases?: Prisma.HistoricalCaseListRelationFilter
   sampleAttempts?: Prisma.SampleAttemptListRelationFilter
   traceEvents?: Prisma.TraceEventListRelationFilter
 }
 
 export type ColorOrderOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  taskNo?: Prisma.SortOrderInput | Prisma.SortOrder
+  customerName?: Prisma.SortOrder
   customerInput?: Prisma.SortOrder
+  requestedColor?: Prisma.SortOrderInput | Prisma.SortOrder
+  colorIntent?: Prisma.SortOrderInput | Prisma.SortOrder
+  productionMaterial?: Prisma.SortOrderInput | Prisma.SortOrder
+  baseCloth?: Prisma.SortOrderInput | Prisma.SortOrder
+  dyeType?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetLab?: Prisma.SortOrderInput | Prisma.SortOrder
+  finalRenderLab?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   confirmedFields?: Prisma.SortOrderInput | Prisma.SortOrder
   selectedCaseId?: Prisma.SortOrderInput | Prisma.SortOrder
   selectedSampleId?: Prisma.SortOrderInput | Prisma.SortOrder
+  finalSchemeId?: Prisma.SortOrderInput | Prisma.SortOrder
+  finalConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   analysis?: Prisma.AnalysisResultOrderByWithRelationInput
+  historicalCases?: Prisma.HistoricalCaseOrderByRelationAggregateInput
   sampleAttempts?: Prisma.SampleAttemptOrderByRelationAggregateInput
   traceEvents?: Prisma.TraceEventOrderByRelationAggregateInput
 }
 
 export type ColorOrderWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  taskNo?: string
   AND?: Prisma.ColorOrderWhereInput | Prisma.ColorOrderWhereInput[]
   OR?: Prisma.ColorOrderWhereInput[]
   NOT?: Prisma.ColorOrderWhereInput | Prisma.ColorOrderWhereInput[]
+  customerName?: Prisma.StringFilter<"ColorOrder"> | string
   customerInput?: Prisma.StringFilter<"ColorOrder"> | string
+  requestedColor?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  colorIntent?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  productionMaterial?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  baseCloth?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  dyeType?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  targetLab?: Prisma.JsonNullableFilter<"ColorOrder">
+  finalRenderLab?: Prisma.JsonNullableFilter<"ColorOrder">
   status?: Prisma.StringFilter<"ColorOrder"> | string
   confirmedFields?: Prisma.JsonNullableFilter<"ColorOrder">
   selectedCaseId?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
   selectedSampleId?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  finalSchemeId?: Prisma.StringNullableFilter<"ColorOrder"> | string | null
+  finalConfirmedAt?: Prisma.DateTimeNullableFilter<"ColorOrder"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ColorOrder"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ColorOrder"> | Date | string
   analysis?: Prisma.XOR<Prisma.AnalysisResultNullableScalarRelationFilter, Prisma.AnalysisResultWhereInput> | null
+  historicalCases?: Prisma.HistoricalCaseListRelationFilter
   sampleAttempts?: Prisma.SampleAttemptListRelationFilter
   traceEvents?: Prisma.TraceEventListRelationFilter
-}, "id">
+}, "id" | "taskNo">
 
 export type ColorOrderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  taskNo?: Prisma.SortOrderInput | Prisma.SortOrder
+  customerName?: Prisma.SortOrder
   customerInput?: Prisma.SortOrder
+  requestedColor?: Prisma.SortOrderInput | Prisma.SortOrder
+  colorIntent?: Prisma.SortOrderInput | Prisma.SortOrder
+  productionMaterial?: Prisma.SortOrderInput | Prisma.SortOrder
+  baseCloth?: Prisma.SortOrderInput | Prisma.SortOrder
+  dyeType?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetLab?: Prisma.SortOrderInput | Prisma.SortOrder
+  finalRenderLab?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   confirmedFields?: Prisma.SortOrderInput | Prisma.SortOrder
   selectedCaseId?: Prisma.SortOrderInput | Prisma.SortOrder
   selectedSampleId?: Prisma.SortOrderInput | Prisma.SortOrder
+  finalSchemeId?: Prisma.SortOrderInput | Prisma.SortOrder
+  finalConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ColorOrderCountOrderByAggregateInput
@@ -257,131 +373,252 @@ export type ColorOrderScalarWhereWithAggregatesInput = {
   OR?: Prisma.ColorOrderScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ColorOrderScalarWhereWithAggregatesInput | Prisma.ColorOrderScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"ColorOrder"> | string
+  taskNo?: Prisma.StringNullableWithAggregatesFilter<"ColorOrder"> | string | null
+  customerName?: Prisma.StringWithAggregatesFilter<"ColorOrder"> | string
   customerInput?: Prisma.StringWithAggregatesFilter<"ColorOrder"> | string
+  requestedColor?: Prisma.StringNullableWithAggregatesFilter<"ColorOrder"> | string | null
+  colorIntent?: Prisma.StringNullableWithAggregatesFilter<"ColorOrder"> | string | null
+  productionMaterial?: Prisma.StringNullableWithAggregatesFilter<"ColorOrder"> | string | null
+  baseCloth?: Prisma.StringNullableWithAggregatesFilter<"ColorOrder"> | string | null
+  dyeType?: Prisma.StringNullableWithAggregatesFilter<"ColorOrder"> | string | null
+  targetLab?: Prisma.JsonNullableWithAggregatesFilter<"ColorOrder">
+  finalRenderLab?: Prisma.JsonNullableWithAggregatesFilter<"ColorOrder">
   status?: Prisma.StringWithAggregatesFilter<"ColorOrder"> | string
   confirmedFields?: Prisma.JsonNullableWithAggregatesFilter<"ColorOrder">
   selectedCaseId?: Prisma.StringNullableWithAggregatesFilter<"ColorOrder"> | string | null
   selectedSampleId?: Prisma.StringNullableWithAggregatesFilter<"ColorOrder"> | string | null
+  finalSchemeId?: Prisma.StringNullableWithAggregatesFilter<"ColorOrder"> | string | null
+  finalConfirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ColorOrder"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ColorOrder"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ColorOrder"> | Date | string
 }
 
 export type ColorOrderCreateInput = {
   id?: string
+  taskNo?: string | null
+  customerName?: string
   customerInput: string
+  requestedColor?: string | null
+  colorIntent?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: string | null
   selectedSampleId?: string | null
+  finalSchemeId?: string | null
+  finalConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   analysis?: Prisma.AnalysisResultCreateNestedOneWithoutOrderInput
+  historicalCases?: Prisma.HistoricalCaseCreateNestedManyWithoutOrderInput
   sampleAttempts?: Prisma.SampleAttemptCreateNestedManyWithoutOrderInput
   traceEvents?: Prisma.TraceEventCreateNestedManyWithoutOrderInput
 }
 
 export type ColorOrderUncheckedCreateInput = {
   id?: string
+  taskNo?: string | null
+  customerName?: string
   customerInput: string
+  requestedColor?: string | null
+  colorIntent?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: string | null
   selectedSampleId?: string | null
+  finalSchemeId?: string | null
+  finalConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   analysis?: Prisma.AnalysisResultUncheckedCreateNestedOneWithoutOrderInput
+  historicalCases?: Prisma.HistoricalCaseUncheckedCreateNestedManyWithoutOrderInput
   sampleAttempts?: Prisma.SampleAttemptUncheckedCreateNestedManyWithoutOrderInput
   traceEvents?: Prisma.TraceEventUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type ColorOrderUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
   customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   analysis?: Prisma.AnalysisResultUpdateOneWithoutOrderNestedInput
+  historicalCases?: Prisma.HistoricalCaseUpdateManyWithoutOrderNestedInput
   sampleAttempts?: Prisma.SampleAttemptUpdateManyWithoutOrderNestedInput
   traceEvents?: Prisma.TraceEventUpdateManyWithoutOrderNestedInput
 }
 
 export type ColorOrderUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
   customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   analysis?: Prisma.AnalysisResultUncheckedUpdateOneWithoutOrderNestedInput
+  historicalCases?: Prisma.HistoricalCaseUncheckedUpdateManyWithoutOrderNestedInput
   sampleAttempts?: Prisma.SampleAttemptUncheckedUpdateManyWithoutOrderNestedInput
   traceEvents?: Prisma.TraceEventUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type ColorOrderCreateManyInput = {
   id?: string
+  taskNo?: string | null
+  customerName?: string
   customerInput: string
+  requestedColor?: string | null
+  colorIntent?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: string | null
   selectedSampleId?: string | null
+  finalSchemeId?: string | null
+  finalConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ColorOrderUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
   customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ColorOrderUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
   customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ColorOrderCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  taskNo?: Prisma.SortOrder
+  customerName?: Prisma.SortOrder
   customerInput?: Prisma.SortOrder
+  requestedColor?: Prisma.SortOrder
+  colorIntent?: Prisma.SortOrder
+  productionMaterial?: Prisma.SortOrder
+  baseCloth?: Prisma.SortOrder
+  dyeType?: Prisma.SortOrder
+  targetLab?: Prisma.SortOrder
+  finalRenderLab?: Prisma.SortOrder
   status?: Prisma.SortOrder
   confirmedFields?: Prisma.SortOrder
   selectedCaseId?: Prisma.SortOrder
   selectedSampleId?: Prisma.SortOrder
+  finalSchemeId?: Prisma.SortOrder
+  finalConfirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type ColorOrderMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  taskNo?: Prisma.SortOrder
+  customerName?: Prisma.SortOrder
   customerInput?: Prisma.SortOrder
+  requestedColor?: Prisma.SortOrder
+  colorIntent?: Prisma.SortOrder
+  productionMaterial?: Prisma.SortOrder
+  baseCloth?: Prisma.SortOrder
+  dyeType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   selectedCaseId?: Prisma.SortOrder
   selectedSampleId?: Prisma.SortOrder
+  finalSchemeId?: Prisma.SortOrder
+  finalConfirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type ColorOrderMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  taskNo?: Prisma.SortOrder
+  customerName?: Prisma.SortOrder
   customerInput?: Prisma.SortOrder
+  requestedColor?: Prisma.SortOrder
+  colorIntent?: Prisma.SortOrder
+  productionMaterial?: Prisma.SortOrder
+  baseCloth?: Prisma.SortOrder
+  dyeType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   selectedCaseId?: Prisma.SortOrder
   selectedSampleId?: Prisma.SortOrder
+  finalSchemeId?: Prisma.SortOrder
+  finalConfirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -391,12 +628,21 @@ export type ColorOrderScalarRelationFilter = {
   isNot?: Prisma.ColorOrderWhereInput
 }
 
+export type ColorOrderNullableScalarRelationFilter = {
+  is?: Prisma.ColorOrderWhereInput | null
+  isNot?: Prisma.ColorOrderWhereInput | null
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -415,6 +661,22 @@ export type ColorOrderUpdateOneRequiredWithoutAnalysisNestedInput = {
   upsert?: Prisma.ColorOrderUpsertWithoutAnalysisInput
   connect?: Prisma.ColorOrderWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ColorOrderUpdateToOneWithWhereWithoutAnalysisInput, Prisma.ColorOrderUpdateWithoutAnalysisInput>, Prisma.ColorOrderUncheckedUpdateWithoutAnalysisInput>
+}
+
+export type ColorOrderCreateNestedOneWithoutHistoricalCasesInput = {
+  create?: Prisma.XOR<Prisma.ColorOrderCreateWithoutHistoricalCasesInput, Prisma.ColorOrderUncheckedCreateWithoutHistoricalCasesInput>
+  connectOrCreate?: Prisma.ColorOrderCreateOrConnectWithoutHistoricalCasesInput
+  connect?: Prisma.ColorOrderWhereUniqueInput
+}
+
+export type ColorOrderUpdateOneWithoutHistoricalCasesNestedInput = {
+  create?: Prisma.XOR<Prisma.ColorOrderCreateWithoutHistoricalCasesInput, Prisma.ColorOrderUncheckedCreateWithoutHistoricalCasesInput>
+  connectOrCreate?: Prisma.ColorOrderCreateOrConnectWithoutHistoricalCasesInput
+  upsert?: Prisma.ColorOrderUpsertWithoutHistoricalCasesInput
+  disconnect?: Prisma.ColorOrderWhereInput | boolean
+  delete?: Prisma.ColorOrderWhereInput | boolean
+  connect?: Prisma.ColorOrderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ColorOrderUpdateToOneWithWhereWithoutHistoricalCasesInput, Prisma.ColorOrderUpdateWithoutHistoricalCasesInput>, Prisma.ColorOrderUncheckedUpdateWithoutHistoricalCasesInput>
 }
 
 export type ColorOrderCreateNestedOneWithoutSampleAttemptsInput = {
@@ -447,26 +709,50 @@ export type ColorOrderUpdateOneRequiredWithoutTraceEventsNestedInput = {
 
 export type ColorOrderCreateWithoutAnalysisInput = {
   id?: string
+  taskNo?: string | null
+  customerName?: string
   customerInput: string
+  requestedColor?: string | null
+  colorIntent?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: string | null
   selectedSampleId?: string | null
+  finalSchemeId?: string | null
+  finalConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  historicalCases?: Prisma.HistoricalCaseCreateNestedManyWithoutOrderInput
   sampleAttempts?: Prisma.SampleAttemptCreateNestedManyWithoutOrderInput
   traceEvents?: Prisma.TraceEventCreateNestedManyWithoutOrderInput
 }
 
 export type ColorOrderUncheckedCreateWithoutAnalysisInput = {
   id?: string
+  taskNo?: string | null
+  customerName?: string
   customerInput: string
+  requestedColor?: string | null
+  colorIntent?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: string | null
   selectedSampleId?: string | null
+  finalSchemeId?: string | null
+  finalConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  historicalCases?: Prisma.HistoricalCaseUncheckedCreateNestedManyWithoutOrderInput
   sampleAttempts?: Prisma.SampleAttemptUncheckedCreateNestedManyWithoutOrderInput
   traceEvents?: Prisma.TraceEventUncheckedCreateNestedManyWithoutOrderInput
 }
@@ -489,53 +775,217 @@ export type ColorOrderUpdateToOneWithWhereWithoutAnalysisInput = {
 
 export type ColorOrderUpdateWithoutAnalysisInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
   customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  historicalCases?: Prisma.HistoricalCaseUpdateManyWithoutOrderNestedInput
   sampleAttempts?: Prisma.SampleAttemptUpdateManyWithoutOrderNestedInput
   traceEvents?: Prisma.TraceEventUpdateManyWithoutOrderNestedInput
 }
 
 export type ColorOrderUncheckedUpdateWithoutAnalysisInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
   customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  historicalCases?: Prisma.HistoricalCaseUncheckedUpdateManyWithoutOrderNestedInput
+  sampleAttempts?: Prisma.SampleAttemptUncheckedUpdateManyWithoutOrderNestedInput
+  traceEvents?: Prisma.TraceEventUncheckedUpdateManyWithoutOrderNestedInput
+}
+
+export type ColorOrderCreateWithoutHistoricalCasesInput = {
+  id?: string
+  taskNo?: string | null
+  customerName?: string
+  customerInput: string
+  requestedColor?: string | null
+  colorIntent?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status: string
+  confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedCaseId?: string | null
+  selectedSampleId?: string | null
+  finalSchemeId?: string | null
+  finalConfirmedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  analysis?: Prisma.AnalysisResultCreateNestedOneWithoutOrderInput
+  sampleAttempts?: Prisma.SampleAttemptCreateNestedManyWithoutOrderInput
+  traceEvents?: Prisma.TraceEventCreateNestedManyWithoutOrderInput
+}
+
+export type ColorOrderUncheckedCreateWithoutHistoricalCasesInput = {
+  id?: string
+  taskNo?: string | null
+  customerName?: string
+  customerInput: string
+  requestedColor?: string | null
+  colorIntent?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status: string
+  confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedCaseId?: string | null
+  selectedSampleId?: string | null
+  finalSchemeId?: string | null
+  finalConfirmedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  analysis?: Prisma.AnalysisResultUncheckedCreateNestedOneWithoutOrderInput
+  sampleAttempts?: Prisma.SampleAttemptUncheckedCreateNestedManyWithoutOrderInput
+  traceEvents?: Prisma.TraceEventUncheckedCreateNestedManyWithoutOrderInput
+}
+
+export type ColorOrderCreateOrConnectWithoutHistoricalCasesInput = {
+  where: Prisma.ColorOrderWhereUniqueInput
+  create: Prisma.XOR<Prisma.ColorOrderCreateWithoutHistoricalCasesInput, Prisma.ColorOrderUncheckedCreateWithoutHistoricalCasesInput>
+}
+
+export type ColorOrderUpsertWithoutHistoricalCasesInput = {
+  update: Prisma.XOR<Prisma.ColorOrderUpdateWithoutHistoricalCasesInput, Prisma.ColorOrderUncheckedUpdateWithoutHistoricalCasesInput>
+  create: Prisma.XOR<Prisma.ColorOrderCreateWithoutHistoricalCasesInput, Prisma.ColorOrderUncheckedCreateWithoutHistoricalCasesInput>
+  where?: Prisma.ColorOrderWhereInput
+}
+
+export type ColorOrderUpdateToOneWithWhereWithoutHistoricalCasesInput = {
+  where?: Prisma.ColorOrderWhereInput
+  data: Prisma.XOR<Prisma.ColorOrderUpdateWithoutHistoricalCasesInput, Prisma.ColorOrderUncheckedUpdateWithoutHistoricalCasesInput>
+}
+
+export type ColorOrderUpdateWithoutHistoricalCasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
+  customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  analysis?: Prisma.AnalysisResultUpdateOneWithoutOrderNestedInput
+  sampleAttempts?: Prisma.SampleAttemptUpdateManyWithoutOrderNestedInput
+  traceEvents?: Prisma.TraceEventUpdateManyWithoutOrderNestedInput
+}
+
+export type ColorOrderUncheckedUpdateWithoutHistoricalCasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
+  customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  analysis?: Prisma.AnalysisResultUncheckedUpdateOneWithoutOrderNestedInput
   sampleAttempts?: Prisma.SampleAttemptUncheckedUpdateManyWithoutOrderNestedInput
   traceEvents?: Prisma.TraceEventUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type ColorOrderCreateWithoutSampleAttemptsInput = {
   id?: string
+  taskNo?: string | null
+  customerName?: string
   customerInput: string
+  requestedColor?: string | null
+  colorIntent?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: string | null
   selectedSampleId?: string | null
+  finalSchemeId?: string | null
+  finalConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   analysis?: Prisma.AnalysisResultCreateNestedOneWithoutOrderInput
+  historicalCases?: Prisma.HistoricalCaseCreateNestedManyWithoutOrderInput
   traceEvents?: Prisma.TraceEventCreateNestedManyWithoutOrderInput
 }
 
 export type ColorOrderUncheckedCreateWithoutSampleAttemptsInput = {
   id?: string
+  taskNo?: string | null
+  customerName?: string
   customerInput: string
+  requestedColor?: string | null
+  colorIntent?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: string | null
   selectedSampleId?: string | null
+  finalSchemeId?: string | null
+  finalConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   analysis?: Prisma.AnalysisResultUncheckedCreateNestedOneWithoutOrderInput
+  historicalCases?: Prisma.HistoricalCaseUncheckedCreateNestedManyWithoutOrderInput
   traceEvents?: Prisma.TraceEventUncheckedCreateNestedManyWithoutOrderInput
 }
 
@@ -557,53 +1007,101 @@ export type ColorOrderUpdateToOneWithWhereWithoutSampleAttemptsInput = {
 
 export type ColorOrderUpdateWithoutSampleAttemptsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
   customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   analysis?: Prisma.AnalysisResultUpdateOneWithoutOrderNestedInput
+  historicalCases?: Prisma.HistoricalCaseUpdateManyWithoutOrderNestedInput
   traceEvents?: Prisma.TraceEventUpdateManyWithoutOrderNestedInput
 }
 
 export type ColorOrderUncheckedUpdateWithoutSampleAttemptsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
   customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   analysis?: Prisma.AnalysisResultUncheckedUpdateOneWithoutOrderNestedInput
+  historicalCases?: Prisma.HistoricalCaseUncheckedUpdateManyWithoutOrderNestedInput
   traceEvents?: Prisma.TraceEventUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type ColorOrderCreateWithoutTraceEventsInput = {
   id?: string
+  taskNo?: string | null
+  customerName?: string
   customerInput: string
+  requestedColor?: string | null
+  colorIntent?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: string | null
   selectedSampleId?: string | null
+  finalSchemeId?: string | null
+  finalConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   analysis?: Prisma.AnalysisResultCreateNestedOneWithoutOrderInput
+  historicalCases?: Prisma.HistoricalCaseCreateNestedManyWithoutOrderInput
   sampleAttempts?: Prisma.SampleAttemptCreateNestedManyWithoutOrderInput
 }
 
 export type ColorOrderUncheckedCreateWithoutTraceEventsInput = {
   id?: string
+  taskNo?: string | null
+  customerName?: string
   customerInput: string
+  requestedColor?: string | null
+  colorIntent?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: string | null
   selectedSampleId?: string | null
+  finalSchemeId?: string | null
+  finalConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   analysis?: Prisma.AnalysisResultUncheckedCreateNestedOneWithoutOrderInput
+  historicalCases?: Prisma.HistoricalCaseUncheckedCreateNestedManyWithoutOrderInput
   sampleAttempts?: Prisma.SampleAttemptUncheckedCreateNestedManyWithoutOrderInput
 }
 
@@ -625,27 +1123,51 @@ export type ColorOrderUpdateToOneWithWhereWithoutTraceEventsInput = {
 
 export type ColorOrderUpdateWithoutTraceEventsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
   customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   analysis?: Prisma.AnalysisResultUpdateOneWithoutOrderNestedInput
+  historicalCases?: Prisma.HistoricalCaseUpdateManyWithoutOrderNestedInput
   sampleAttempts?: Prisma.SampleAttemptUpdateManyWithoutOrderNestedInput
 }
 
 export type ColorOrderUncheckedUpdateWithoutTraceEventsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  taskNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
   customerInput?: Prisma.StringFieldUpdateOperationsInput | string
+  requestedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colorIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  finalRenderLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   confirmedFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   selectedCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   selectedSampleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finalConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   analysis?: Prisma.AnalysisResultUncheckedUpdateOneWithoutOrderNestedInput
+  historicalCases?: Prisma.HistoricalCaseUncheckedUpdateManyWithoutOrderNestedInput
   sampleAttempts?: Prisma.SampleAttemptUncheckedUpdateManyWithoutOrderNestedInput
 }
 
@@ -655,11 +1177,13 @@ export type ColorOrderUncheckedUpdateWithoutTraceEventsInput = {
  */
 
 export type ColorOrderCountOutputType = {
+  historicalCases: number
   sampleAttempts: number
   traceEvents: number
 }
 
 export type ColorOrderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  historicalCases?: boolean | ColorOrderCountOutputTypeCountHistoricalCasesArgs
   sampleAttempts?: boolean | ColorOrderCountOutputTypeCountSampleAttemptsArgs
   traceEvents?: boolean | ColorOrderCountOutputTypeCountTraceEventsArgs
 }
@@ -672,6 +1196,13 @@ export type ColorOrderCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.E
    * Select specific fields to fetch from the ColorOrderCountOutputType
    */
   select?: Prisma.ColorOrderCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ColorOrderCountOutputType without action
+ */
+export type ColorOrderCountOutputTypeCountHistoricalCasesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.HistoricalCaseWhereInput
 }
 
 /**
@@ -691,14 +1222,26 @@ export type ColorOrderCountOutputTypeCountTraceEventsArgs<ExtArgs extends runtim
 
 export type ColorOrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  taskNo?: boolean
+  customerName?: boolean
   customerInput?: boolean
+  requestedColor?: boolean
+  colorIntent?: boolean
+  productionMaterial?: boolean
+  baseCloth?: boolean
+  dyeType?: boolean
+  targetLab?: boolean
+  finalRenderLab?: boolean
   status?: boolean
   confirmedFields?: boolean
   selectedCaseId?: boolean
   selectedSampleId?: boolean
+  finalSchemeId?: boolean
+  finalConfirmedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   analysis?: boolean | Prisma.ColorOrder$analysisArgs<ExtArgs>
+  historicalCases?: boolean | Prisma.ColorOrder$historicalCasesArgs<ExtArgs>
   sampleAttempts?: boolean | Prisma.ColorOrder$sampleAttemptsArgs<ExtArgs>
   traceEvents?: boolean | Prisma.ColorOrder$traceEventsArgs<ExtArgs>
   _count?: boolean | Prisma.ColorOrderCountOutputTypeDefaultArgs<ExtArgs>
@@ -706,40 +1249,74 @@ export type ColorOrderSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
 
 export type ColorOrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  taskNo?: boolean
+  customerName?: boolean
   customerInput?: boolean
+  requestedColor?: boolean
+  colorIntent?: boolean
+  productionMaterial?: boolean
+  baseCloth?: boolean
+  dyeType?: boolean
+  targetLab?: boolean
+  finalRenderLab?: boolean
   status?: boolean
   confirmedFields?: boolean
   selectedCaseId?: boolean
   selectedSampleId?: boolean
+  finalSchemeId?: boolean
+  finalConfirmedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["colorOrder"]>
 
 export type ColorOrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  taskNo?: boolean
+  customerName?: boolean
   customerInput?: boolean
+  requestedColor?: boolean
+  colorIntent?: boolean
+  productionMaterial?: boolean
+  baseCloth?: boolean
+  dyeType?: boolean
+  targetLab?: boolean
+  finalRenderLab?: boolean
   status?: boolean
   confirmedFields?: boolean
   selectedCaseId?: boolean
   selectedSampleId?: boolean
+  finalSchemeId?: boolean
+  finalConfirmedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["colorOrder"]>
 
 export type ColorOrderSelectScalar = {
   id?: boolean
+  taskNo?: boolean
+  customerName?: boolean
   customerInput?: boolean
+  requestedColor?: boolean
+  colorIntent?: boolean
+  productionMaterial?: boolean
+  baseCloth?: boolean
+  dyeType?: boolean
+  targetLab?: boolean
+  finalRenderLab?: boolean
   status?: boolean
   confirmedFields?: boolean
   selectedCaseId?: boolean
   selectedSampleId?: boolean
+  finalSchemeId?: boolean
+  finalConfirmedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ColorOrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerInput" | "status" | "confirmedFields" | "selectedCaseId" | "selectedSampleId" | "createdAt" | "updatedAt", ExtArgs["result"]["colorOrder"]>
+export type ColorOrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "taskNo" | "customerName" | "customerInput" | "requestedColor" | "colorIntent" | "productionMaterial" | "baseCloth" | "dyeType" | "targetLab" | "finalRenderLab" | "status" | "confirmedFields" | "selectedCaseId" | "selectedSampleId" | "finalSchemeId" | "finalConfirmedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["colorOrder"]>
 export type ColorOrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   analysis?: boolean | Prisma.ColorOrder$analysisArgs<ExtArgs>
+  historicalCases?: boolean | Prisma.ColorOrder$historicalCasesArgs<ExtArgs>
   sampleAttempts?: boolean | Prisma.ColorOrder$sampleAttemptsArgs<ExtArgs>
   traceEvents?: boolean | Prisma.ColorOrder$traceEventsArgs<ExtArgs>
   _count?: boolean | Prisma.ColorOrderCountOutputTypeDefaultArgs<ExtArgs>
@@ -751,16 +1328,28 @@ export type $ColorOrderPayload<ExtArgs extends runtime.Types.Extensions.Internal
   name: "ColorOrder"
   objects: {
     analysis: Prisma.$AnalysisResultPayload<ExtArgs> | null
+    historicalCases: Prisma.$HistoricalCasePayload<ExtArgs>[]
     sampleAttempts: Prisma.$SampleAttemptPayload<ExtArgs>[]
     traceEvents: Prisma.$TraceEventPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    taskNo: string | null
+    customerName: string
     customerInput: string
+    requestedColor: string | null
+    colorIntent: string | null
+    productionMaterial: string | null
+    baseCloth: string | null
+    dyeType: string | null
+    targetLab: runtime.JsonValue | null
+    finalRenderLab: runtime.JsonValue | null
     status: string
     confirmedFields: runtime.JsonValue | null
     selectedCaseId: string | null
     selectedSampleId: string | null
+    finalSchemeId: string | null
+    finalConfirmedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["colorOrder"]>
@@ -1158,6 +1747,7 @@ readonly fields: ColorOrderFieldRefs;
 export interface Prisma__ColorOrderClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   analysis<T extends Prisma.ColorOrder$analysisArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ColorOrder$analysisArgs<ExtArgs>>): Prisma.Prisma__AnalysisResultClient<runtime.Types.Result.GetResult<Prisma.$AnalysisResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  historicalCases<T extends Prisma.ColorOrder$historicalCasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ColorOrder$historicalCasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HistoricalCasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sampleAttempts<T extends Prisma.ColorOrder$sampleAttemptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ColorOrder$sampleAttemptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SampleAttemptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   traceEvents<T extends Prisma.ColorOrder$traceEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ColorOrder$traceEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TraceEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1190,11 +1780,22 @@ export interface Prisma__ColorOrderClient<T, Null = never, ExtArgs extends runti
  */
 export interface ColorOrderFieldRefs {
   readonly id: Prisma.FieldRef<"ColorOrder", 'String'>
+  readonly taskNo: Prisma.FieldRef<"ColorOrder", 'String'>
+  readonly customerName: Prisma.FieldRef<"ColorOrder", 'String'>
   readonly customerInput: Prisma.FieldRef<"ColorOrder", 'String'>
+  readonly requestedColor: Prisma.FieldRef<"ColorOrder", 'String'>
+  readonly colorIntent: Prisma.FieldRef<"ColorOrder", 'String'>
+  readonly productionMaterial: Prisma.FieldRef<"ColorOrder", 'String'>
+  readonly baseCloth: Prisma.FieldRef<"ColorOrder", 'String'>
+  readonly dyeType: Prisma.FieldRef<"ColorOrder", 'String'>
+  readonly targetLab: Prisma.FieldRef<"ColorOrder", 'Json'>
+  readonly finalRenderLab: Prisma.FieldRef<"ColorOrder", 'Json'>
   readonly status: Prisma.FieldRef<"ColorOrder", 'String'>
   readonly confirmedFields: Prisma.FieldRef<"ColorOrder", 'Json'>
   readonly selectedCaseId: Prisma.FieldRef<"ColorOrder", 'String'>
   readonly selectedSampleId: Prisma.FieldRef<"ColorOrder", 'String'>
+  readonly finalSchemeId: Prisma.FieldRef<"ColorOrder", 'String'>
+  readonly finalConfirmedAt: Prisma.FieldRef<"ColorOrder", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"ColorOrder", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ColorOrder", 'DateTime'>
 }
@@ -1604,6 +2205,30 @@ export type ColorOrder$analysisArgs<ExtArgs extends runtime.Types.Extensions.Int
    */
   include?: Prisma.AnalysisResultInclude<ExtArgs> | null
   where?: Prisma.AnalysisResultWhereInput
+}
+
+/**
+ * ColorOrder.historicalCases
+ */
+export type ColorOrder$historicalCasesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the HistoricalCase
+   */
+  select?: Prisma.HistoricalCaseSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the HistoricalCase
+   */
+  omit?: Prisma.HistoricalCaseOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.HistoricalCaseInclude<ExtArgs> | null
+  where?: Prisma.HistoricalCaseWhereInput
+  orderBy?: Prisma.HistoricalCaseOrderByWithRelationInput | Prisma.HistoricalCaseOrderByWithRelationInput[]
+  cursor?: Prisma.HistoricalCaseWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.HistoricalCaseScalarFieldEnum | Prisma.HistoricalCaseScalarFieldEnum[]
 }
 
 /**

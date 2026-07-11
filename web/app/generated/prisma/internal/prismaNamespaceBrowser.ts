@@ -73,11 +73,22 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 export const ColorOrderScalarFieldEnum = {
   id: 'id',
+  taskNo: 'taskNo',
+  customerName: 'customerName',
   customerInput: 'customerInput',
+  requestedColor: 'requestedColor',
+  colorIntent: 'colorIntent',
+  productionMaterial: 'productionMaterial',
+  baseCloth: 'baseCloth',
+  dyeType: 'dyeType',
+  targetLab: 'targetLab',
+  finalRenderLab: 'finalRenderLab',
   status: 'status',
   confirmedFields: 'confirmedFields',
   selectedCaseId: 'selectedCaseId',
   selectedSampleId: 'selectedSampleId',
+  finalSchemeId: 'finalSchemeId',
+  finalConfirmedAt: 'finalConfirmedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -100,12 +111,17 @@ export type AnalysisResultScalarFieldEnum = (typeof AnalysisResultScalarFieldEnu
 
 export const HistoricalCaseScalarFieldEnum = {
   id: 'id',
+  orderId: 'orderId',
   name: 'name',
+  sourceType: 'sourceType',
   fabric: 'fabric',
+  dyeType: 'dyeType',
   baseCloth: 'baseCloth',
   lab: 'lab',
+  similarityScore: 'similarityScore',
   similarityReason: 'similarityReason',
   riskNote: 'riskNote',
+  selected: 'selected',
   createdAt: 'createdAt'
 } as const
 
@@ -116,10 +132,29 @@ export const SampleAttemptScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
   version: 'version',
+  schemeName: 'schemeName',
+  targetLab: 'targetLab',
   lab: 'lab',
+  aiLab: 'aiLab',
+  historicalCaseId: 'historicalCaseId',
+  productionMaterial: 'productionMaterial',
+  baseCloth: 'baseCloth',
+  dyeType: 'dyeType',
+  illuminant: 'illuminant',
+  illuminantLabel: 'illuminantLabel',
+  reviewIlluminant: 'reviewIlluminant',
+  reviewIlluminantLabel: 'reviewIlluminantLabel',
+  cctKelvin: 'cctKelvin',
+  illuminanceLux: 'illuminanceLux',
+  viewingAngle: 'viewingAngle',
+  textureGloss: 'textureGloss',
+  confirmationSnapshot: 'confirmationSnapshot',
   deltaE: 'deltaE',
   passed: 'passed',
+  recommendation: 'recommendation',
   deviation: 'deviation',
+  selected: 'selected',
+  confirmedAt: 'confirmedAt',
   createdAt: 'createdAt'
 } as const
 
@@ -129,8 +164,11 @@ export type SampleAttemptScalarFieldEnum = (typeof SampleAttemptScalarFieldEnum)
 export const TraceEventScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
+  eventType: 'eventType',
+  actor: 'actor',
   label: 'label',
   detail: 'detail',
+  snapshot: 'snapshot',
   createdAt: 'createdAt'
 } as const
 

@@ -89,7 +89,70 @@ describe("completeAnalysisFromInput", () => {
       targetColorName: "黑色",
       avoidHueRisk: "避免发红",
       fabric: "棉卫衣",
+      illuminant: "D65",
+      deltaEThreshold: 1.5,
+      missingFields: ["targetLab"],
+    });
+  });
+
+  it("uses explicit base cloth when the customer input mentions it", () => {
+    expect(
+      completeAnalysisFromInput(
+        {
+          ...completeAnalysis,
+          baseCloth: null,
+          missingFields: ["baseCloth"],
+        },
+        "客户要黑色棉卫衣，做在本白布上，不能发红。",
+      ),
+    ).toMatchObject({
+      baseCloth: "本白布",
+      missingFields: ["targetLab"],
+    });
+  });
+
+  it("keeps the target Lab from the AI JSON instead of synthesizing a frontend mock", () => {
+    expect(
+      completeAnalysisFromInput(
+        {
+          ...completeAnalysis,
+          targetColorName: "雾霾蓝",
+          fabric: "棉针织",
+          baseCloth: null,
+          illuminant: null,
+          targetLab: { l: 62, a: -3, b: -12 },
+          deltaEThreshold: null,
+          missingFields: ["baseCloth", "illuminant", "deltaEThreshold"],
+        },
+        "客户要高级一点的雾霾蓝，别太紫，做在棉针织上。",
+      ),
+    ).toMatchObject({
+      baseCloth: "本白布",
+      illuminant: "D65",
+      targetLab: { l: 62, a: -3, b: -12 },
+      deltaEThreshold: 1.5,
       missingFields: [],
+    });
+  });
+
+  it("does not invent a target Lab when the AI JSON omits it", () => {
+    expect(
+      completeAnalysisFromInput(
+        {
+          ...completeAnalysis,
+          targetColorName: "雾霾蓝",
+          fabric: "棉针织",
+          baseCloth: null,
+          illuminant: null,
+          targetLab: null,
+          deltaEThreshold: null,
+          missingFields: ["targetLab"],
+        },
+        "客户要高级一点的雾霾蓝，别太紫，做在棉针织上。",
+      ),
+    ).toMatchObject({
+      targetLab: null,
+      missingFields: ["targetLab"],
     });
   });
 });

@@ -27,6 +27,8 @@ export type AggregateTraceEvent = {
 export type TraceEventMinAggregateOutputType = {
   id: string | null
   orderId: string | null
+  eventType: string | null
+  actor: string | null
   label: string | null
   detail: string | null
   createdAt: Date | null
@@ -35,6 +37,8 @@ export type TraceEventMinAggregateOutputType = {
 export type TraceEventMaxAggregateOutputType = {
   id: string | null
   orderId: string | null
+  eventType: string | null
+  actor: string | null
   label: string | null
   detail: string | null
   createdAt: Date | null
@@ -43,8 +47,11 @@ export type TraceEventMaxAggregateOutputType = {
 export type TraceEventCountAggregateOutputType = {
   id: number
   orderId: number
+  eventType: number
+  actor: number
   label: number
   detail: number
+  snapshot: number
   createdAt: number
   _all: number
 }
@@ -53,6 +60,8 @@ export type TraceEventCountAggregateOutputType = {
 export type TraceEventMinAggregateInputType = {
   id?: true
   orderId?: true
+  eventType?: true
+  actor?: true
   label?: true
   detail?: true
   createdAt?: true
@@ -61,6 +70,8 @@ export type TraceEventMinAggregateInputType = {
 export type TraceEventMaxAggregateInputType = {
   id?: true
   orderId?: true
+  eventType?: true
+  actor?: true
   label?: true
   detail?: true
   createdAt?: true
@@ -69,8 +80,11 @@ export type TraceEventMaxAggregateInputType = {
 export type TraceEventCountAggregateInputType = {
   id?: true
   orderId?: true
+  eventType?: true
+  actor?: true
   label?: true
   detail?: true
+  snapshot?: true
   createdAt?: true
   _all?: true
 }
@@ -150,8 +164,11 @@ export type TraceEventGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 export type TraceEventGroupByOutputType = {
   id: string
   orderId: string
+  eventType: string
+  actor: string
   label: string
   detail: string
+  snapshot: runtime.JsonValue | null
   createdAt: Date
   _count: TraceEventCountAggregateOutputType | null
   _min: TraceEventMinAggregateOutputType | null
@@ -179,8 +196,11 @@ export type TraceEventWhereInput = {
   NOT?: Prisma.TraceEventWhereInput | Prisma.TraceEventWhereInput[]
   id?: Prisma.StringFilter<"TraceEvent"> | string
   orderId?: Prisma.StringFilter<"TraceEvent"> | string
+  eventType?: Prisma.StringFilter<"TraceEvent"> | string
+  actor?: Prisma.StringFilter<"TraceEvent"> | string
   label?: Prisma.StringFilter<"TraceEvent"> | string
   detail?: Prisma.StringFilter<"TraceEvent"> | string
+  snapshot?: Prisma.JsonNullableFilter<"TraceEvent">
   createdAt?: Prisma.DateTimeFilter<"TraceEvent"> | Date | string
   order?: Prisma.XOR<Prisma.ColorOrderScalarRelationFilter, Prisma.ColorOrderWhereInput>
 }
@@ -188,8 +208,11 @@ export type TraceEventWhereInput = {
 export type TraceEventOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  actor?: Prisma.SortOrder
   label?: Prisma.SortOrder
   detail?: Prisma.SortOrder
+  snapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   order?: Prisma.ColorOrderOrderByWithRelationInput
 }
@@ -200,8 +223,11 @@ export type TraceEventWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.TraceEventWhereInput[]
   NOT?: Prisma.TraceEventWhereInput | Prisma.TraceEventWhereInput[]
   orderId?: Prisma.StringFilter<"TraceEvent"> | string
+  eventType?: Prisma.StringFilter<"TraceEvent"> | string
+  actor?: Prisma.StringFilter<"TraceEvent"> | string
   label?: Prisma.StringFilter<"TraceEvent"> | string
   detail?: Prisma.StringFilter<"TraceEvent"> | string
+  snapshot?: Prisma.JsonNullableFilter<"TraceEvent">
   createdAt?: Prisma.DateTimeFilter<"TraceEvent"> | Date | string
   order?: Prisma.XOR<Prisma.ColorOrderScalarRelationFilter, Prisma.ColorOrderWhereInput>
 }, "id">
@@ -209,8 +235,11 @@ export type TraceEventWhereUniqueInput = Prisma.AtLeast<{
 export type TraceEventOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  actor?: Prisma.SortOrder
   label?: Prisma.SortOrder
   detail?: Prisma.SortOrder
+  snapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.TraceEventCountOrderByAggregateInput
   _max?: Prisma.TraceEventMaxOrderByAggregateInput
@@ -223,15 +252,21 @@ export type TraceEventScalarWhereWithAggregatesInput = {
   NOT?: Prisma.TraceEventScalarWhereWithAggregatesInput | Prisma.TraceEventScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"TraceEvent"> | string
   orderId?: Prisma.StringWithAggregatesFilter<"TraceEvent"> | string
+  eventType?: Prisma.StringWithAggregatesFilter<"TraceEvent"> | string
+  actor?: Prisma.StringWithAggregatesFilter<"TraceEvent"> | string
   label?: Prisma.StringWithAggregatesFilter<"TraceEvent"> | string
   detail?: Prisma.StringWithAggregatesFilter<"TraceEvent"> | string
+  snapshot?: Prisma.JsonNullableWithAggregatesFilter<"TraceEvent">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"TraceEvent"> | Date | string
 }
 
 export type TraceEventCreateInput = {
   id?: string
+  eventType?: string
+  actor?: string
   label: string
   detail: string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   order: Prisma.ColorOrderCreateNestedOneWithoutTraceEventsInput
 }
@@ -239,15 +274,21 @@ export type TraceEventCreateInput = {
 export type TraceEventUncheckedCreateInput = {
   id?: string
   orderId: string
+  eventType?: string
+  actor?: string
   label: string
   detail: string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
 export type TraceEventUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  actor?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   detail?: Prisma.StringFieldUpdateOperationsInput | string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   order?: Prisma.ColorOrderUpdateOneRequiredWithoutTraceEventsNestedInput
 }
@@ -255,31 +296,43 @@ export type TraceEventUpdateInput = {
 export type TraceEventUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  actor?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   detail?: Prisma.StringFieldUpdateOperationsInput | string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TraceEventCreateManyInput = {
   id?: string
   orderId: string
+  eventType?: string
+  actor?: string
   label: string
   detail: string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
 export type TraceEventUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  actor?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   detail?: Prisma.StringFieldUpdateOperationsInput | string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TraceEventUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  actor?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   detail?: Prisma.StringFieldUpdateOperationsInput | string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -296,14 +349,19 @@ export type TraceEventOrderByRelationAggregateInput = {
 export type TraceEventCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  actor?: Prisma.SortOrder
   label?: Prisma.SortOrder
   detail?: Prisma.SortOrder
+  snapshot?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type TraceEventMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  actor?: Prisma.SortOrder
   label?: Prisma.SortOrder
   detail?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -312,6 +370,8 @@ export type TraceEventMaxOrderByAggregateInput = {
 export type TraceEventMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  actor?: Prisma.SortOrder
   label?: Prisma.SortOrder
   detail?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -361,15 +421,21 @@ export type TraceEventUncheckedUpdateManyWithoutOrderNestedInput = {
 
 export type TraceEventCreateWithoutOrderInput = {
   id?: string
+  eventType?: string
+  actor?: string
   label: string
   detail: string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
 export type TraceEventUncheckedCreateWithoutOrderInput = {
   id?: string
+  eventType?: string
+  actor?: string
   label: string
   detail: string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
@@ -404,36 +470,51 @@ export type TraceEventScalarWhereInput = {
   NOT?: Prisma.TraceEventScalarWhereInput | Prisma.TraceEventScalarWhereInput[]
   id?: Prisma.StringFilter<"TraceEvent"> | string
   orderId?: Prisma.StringFilter<"TraceEvent"> | string
+  eventType?: Prisma.StringFilter<"TraceEvent"> | string
+  actor?: Prisma.StringFilter<"TraceEvent"> | string
   label?: Prisma.StringFilter<"TraceEvent"> | string
   detail?: Prisma.StringFilter<"TraceEvent"> | string
+  snapshot?: Prisma.JsonNullableFilter<"TraceEvent">
   createdAt?: Prisma.DateTimeFilter<"TraceEvent"> | Date | string
 }
 
 export type TraceEventCreateManyOrderInput = {
   id?: string
+  eventType?: string
+  actor?: string
   label: string
   detail: string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
 export type TraceEventUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  actor?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   detail?: Prisma.StringFieldUpdateOperationsInput | string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TraceEventUncheckedUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  actor?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   detail?: Prisma.StringFieldUpdateOperationsInput | string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TraceEventUncheckedUpdateManyWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  actor?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   detail?: Prisma.StringFieldUpdateOperationsInput | string
+  snapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -442,8 +523,11 @@ export type TraceEventUncheckedUpdateManyWithoutOrderInput = {
 export type TraceEventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   orderId?: boolean
+  eventType?: boolean
+  actor?: boolean
   label?: boolean
   detail?: boolean
+  snapshot?: boolean
   createdAt?: boolean
   order?: boolean | Prisma.ColorOrderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["traceEvent"]>
@@ -451,8 +535,11 @@ export type TraceEventSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type TraceEventSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   orderId?: boolean
+  eventType?: boolean
+  actor?: boolean
   label?: boolean
   detail?: boolean
+  snapshot?: boolean
   createdAt?: boolean
   order?: boolean | Prisma.ColorOrderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["traceEvent"]>
@@ -460,8 +547,11 @@ export type TraceEventSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
 export type TraceEventSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   orderId?: boolean
+  eventType?: boolean
+  actor?: boolean
   label?: boolean
   detail?: boolean
+  snapshot?: boolean
   createdAt?: boolean
   order?: boolean | Prisma.ColorOrderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["traceEvent"]>
@@ -469,12 +559,15 @@ export type TraceEventSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
 export type TraceEventSelectScalar = {
   id?: boolean
   orderId?: boolean
+  eventType?: boolean
+  actor?: boolean
   label?: boolean
   detail?: boolean
+  snapshot?: boolean
   createdAt?: boolean
 }
 
-export type TraceEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "label" | "detail" | "createdAt", ExtArgs["result"]["traceEvent"]>
+export type TraceEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "eventType" | "actor" | "label" | "detail" | "snapshot" | "createdAt", ExtArgs["result"]["traceEvent"]>
 export type TraceEventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.ColorOrderDefaultArgs<ExtArgs>
 }
@@ -493,8 +586,11 @@ export type $TraceEventPayload<ExtArgs extends runtime.Types.Extensions.Internal
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     orderId: string
+    eventType: string
+    actor: string
     label: string
     detail: string
+    snapshot: runtime.JsonValue | null
     createdAt: Date
   }, ExtArgs["result"]["traceEvent"]>
   composites: {}
@@ -922,8 +1018,11 @@ export interface Prisma__TraceEventClient<T, Null = never, ExtArgs extends runti
 export interface TraceEventFieldRefs {
   readonly id: Prisma.FieldRef<"TraceEvent", 'String'>
   readonly orderId: Prisma.FieldRef<"TraceEvent", 'String'>
+  readonly eventType: Prisma.FieldRef<"TraceEvent", 'String'>
+  readonly actor: Prisma.FieldRef<"TraceEvent", 'String'>
   readonly label: Prisma.FieldRef<"TraceEvent", 'String'>
   readonly detail: Prisma.FieldRef<"TraceEvent", 'String'>
+  readonly snapshot: Prisma.FieldRef<"TraceEvent", 'Json'>
   readonly createdAt: Prisma.FieldRef<"TraceEvent", 'DateTime'>
 }
     

@@ -42,6 +42,21 @@ function withoutFields(fields: string[], removed: string[]) {
   return fields.filter((field) => !removed.includes(field));
 }
 
+function normalizeMissingFields(analysis: StructuredAnalysis) {
+  const fields = new Set(analysis.missingFields);
+
+  if (isUnknown(analysis.colorIntent)) fields.add("colorIntent");
+  if (isUnknown(analysis.targetColorName)) fields.add("targetColorName");
+  if (isUnknown(analysis.avoidHueRisk)) fields.add("avoidHueRisk");
+  if (isUnknown(analysis.fabric)) fields.add("fabric");
+  if (!analysis.baseCloth) fields.add("baseCloth");
+  if (!analysis.illuminant) fields.add("illuminant");
+  if (!analysis.targetLab) fields.add("targetLab");
+  if (analysis.deltaEThreshold === null) fields.add("deltaEThreshold");
+
+  return [...fields];
+}
+
 function asNullableLab(value: unknown): LabValue | null {
   if (!value || typeof value !== "object") return null;
   const lab = value as Partial<LabValue>;
@@ -59,6 +74,14 @@ function stripJsonFence(raw: string) {
   return fenced?.[1] ?? trimmed;
 }
 
+function suggestedBaseCloth(customerInput: string, fabric: string) {
+  if (customerInput.includes("罗纹") || fabric.includes("罗纹")) return "本白罗纹";
+  if (customerInput.includes("汗布") || fabric.includes("汗布")) return "本白汗布";
+  if (customerInput.includes("针织") || fabric.includes("针织")) return "本白布";
+  if (customerInput.includes("棉") || fabric.includes("棉")) return "本白布";
+  return "客户原布";
+}
+
 export function buildAnalysisMessages(
   customerInput: string,
 ): ChatCompletionMessageParam[] {
@@ -66,7 +89,7 @@ export function buildAnalysisMessages(
     {
       role: "system",
       content:
-        '你是纺织打样颜色需求分析助手。只输出 JSON，不要输出解释。响应必须是 JSON。必须从客户自然语言中抽取可见信息：出现“黑色、雾霾蓝、米白”等颜色词时，targetColorName 必须填该颜色；出现“棉、针织、卫衣、汗布、罗纹”等面料或品类词时，fabric 必须填对应词；出现“不能发红、别太紫、不要偏黄”等约束时，avoidHueRisk 必须填该风险。只有文本完全没有的信息才写入 missingFields。colorIntent、targetColorName、avoidHueRisk、fabric 必须输出字符串，不能输出 null。JSON 字段示例：{"colorIntent":"低饱和雾霾蓝","targetColorName":"雾霾蓝","avoidHueRisk":"避免偏紫","fabric":"棉针织","baseCloth":null,"illuminant":null,"targetLab":null,"deltaEThreshold":null,"missingFields":["targetLab"],"confidence":0.8,"followUpQuestions":["请补充目标 Lab"]}。',
+        '你是纺织打样颜色需求分析助手。只输出 JSON，不要输出解释。响应必须是 JSON。必须从客户自然语言中抽取可见信息，并给出可人工确认的打样建议。客户通常不懂 Lab 或染料配比，所以当文本没有目标 Lab 时，你必须根据颜色词、面料和风险约束生成一个建议 targetLab，作为人工通过色块调整的起点；不要把建议值写入 missingFields。出现“黑色、雾霾蓝、米白”等颜色词时，targetColorName 必须填该颜色；出现“棉、针织、卫衣、汗布、罗纹”等面料或品类词时，fabric 必须填对应词；出现“不能发红、别太紫、不要偏黄”等约束时，avoidHueRisk 必须填该风险。baseCloth、illuminant、deltaEThreshold 如果客户未指定，也要按常规打样给建议值，例如 D65 和 Delta E 1.5。colorIntent、targetColorName、avoidHueRisk、fabric 必须输出字符串，不能输出 null。JSON 字段示例：{"colorIntent":"低饱和雾霾蓝","targetColorName":"雾霾蓝","avoidHueRisk":"避免偏紫","fabric":"棉针织","baseCloth":"本白布","illuminant":"D65","targetLab":{"l":62,"a":-3,"b":-12},"deltaEThreshold":1.5,"missingFields":[],"confidence":0.8,"followUpQuestions":["请人工确认目标色块是否偏紫或偏灰"]}。',
     },
     {
       role: "user",
@@ -127,6 +150,19 @@ export function completeAnalysisFromInput(
     (customerInput.includes("棉") && customerInput.includes("卫衣")
       ? "棉卫衣"
       : null);
+  const explicitBaseCloth = firstMatch(customerInput, [
+    "暖底白布",
+    "本白布",
+    "漂白布",
+    "胚布",
+    "客户原布",
+  ]);
+  const illuminant = firstMatch(customerInput.toUpperCase(), [
+    "D65",
+    "D50",
+    "TL84",
+    "A 光源",
+  ]);
   const risk = customerInput.includes("发红")
     ? "避免发红"
     : customerInput.includes("偏紫") || customerInput.includes("太紫")
@@ -150,14 +186,37 @@ export function completeAnalysisFromInput(
     next.fabric = fabric;
     filledFields.push("fabric");
   }
+  if (explicitBaseCloth && !next.baseCloth) {
+    next.baseCloth = explicitBaseCloth;
+    filledFields.push("baseCloth");
+  }
+  if (illuminant && !next.illuminant) {
+    next.illuminant = illuminant;
+    filledFields.push("illuminant");
+  }
   if (risk && isUnknown(next.avoidHueRisk)) {
     next.avoidHueRisk = risk;
     filledFields.push("avoidHueRisk");
   }
+  if (!next.baseCloth) {
+    next.baseCloth = suggestedBaseCloth(customerInput, next.fabric);
+    filledFields.push("baseCloth");
+  }
+  if (!next.illuminant) {
+    next.illuminant = "D65";
+    filledFields.push("illuminant");
+  }
+  if (next.deltaEThreshold === null) {
+    next.deltaEThreshold = 1.5;
+    filledFields.push("deltaEThreshold");
+  }
 
   return {
     ...next,
-    missingFields: withoutFields(next.missingFields, filledFields),
+    missingFields: normalizeMissingFields({
+      ...next,
+      missingFields: withoutFields(next.missingFields, filledFields),
+    }),
   };
 }
 

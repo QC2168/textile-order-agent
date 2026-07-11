@@ -27,10 +27,18 @@ export type AggregateSampleAttempt = {
 }
 
 export type SampleAttemptAvgAggregateOutputType = {
+  cctKelvin: number | null
+  illuminanceLux: number | null
+  viewingAngle: number | null
+  textureGloss: number | null
   deltaE: number | null
 }
 
 export type SampleAttemptSumAggregateOutputType = {
+  cctKelvin: number | null
+  illuminanceLux: number | null
+  viewingAngle: number | null
+  textureGloss: number | null
   deltaE: number | null
 }
 
@@ -38,9 +46,25 @@ export type SampleAttemptMinAggregateOutputType = {
   id: string | null
   orderId: string | null
   version: string | null
+  schemeName: string | null
+  historicalCaseId: string | null
+  productionMaterial: string | null
+  baseCloth: string | null
+  dyeType: string | null
+  illuminant: string | null
+  illuminantLabel: string | null
+  reviewIlluminant: string | null
+  reviewIlluminantLabel: string | null
+  cctKelvin: number | null
+  illuminanceLux: number | null
+  viewingAngle: number | null
+  textureGloss: number | null
   deltaE: number | null
   passed: boolean | null
+  recommendation: string | null
   deviation: string | null
+  selected: boolean | null
+  confirmedAt: Date | null
   createdAt: Date | null
 }
 
@@ -48,9 +72,25 @@ export type SampleAttemptMaxAggregateOutputType = {
   id: string | null
   orderId: string | null
   version: string | null
+  schemeName: string | null
+  historicalCaseId: string | null
+  productionMaterial: string | null
+  baseCloth: string | null
+  dyeType: string | null
+  illuminant: string | null
+  illuminantLabel: string | null
+  reviewIlluminant: string | null
+  reviewIlluminantLabel: string | null
+  cctKelvin: number | null
+  illuminanceLux: number | null
+  viewingAngle: number | null
+  textureGloss: number | null
   deltaE: number | null
   passed: boolean | null
+  recommendation: string | null
   deviation: string | null
+  selected: boolean | null
+  confirmedAt: Date | null
   createdAt: Date | null
 }
 
@@ -58,20 +98,47 @@ export type SampleAttemptCountAggregateOutputType = {
   id: number
   orderId: number
   version: number
+  schemeName: number
+  targetLab: number
   lab: number
+  aiLab: number
+  historicalCaseId: number
+  productionMaterial: number
+  baseCloth: number
+  dyeType: number
+  illuminant: number
+  illuminantLabel: number
+  reviewIlluminant: number
+  reviewIlluminantLabel: number
+  cctKelvin: number
+  illuminanceLux: number
+  viewingAngle: number
+  textureGloss: number
+  confirmationSnapshot: number
   deltaE: number
   passed: number
+  recommendation: number
   deviation: number
+  selected: number
+  confirmedAt: number
   createdAt: number
   _all: number
 }
 
 
 export type SampleAttemptAvgAggregateInputType = {
+  cctKelvin?: true
+  illuminanceLux?: true
+  viewingAngle?: true
+  textureGloss?: true
   deltaE?: true
 }
 
 export type SampleAttemptSumAggregateInputType = {
+  cctKelvin?: true
+  illuminanceLux?: true
+  viewingAngle?: true
+  textureGloss?: true
   deltaE?: true
 }
 
@@ -79,9 +146,25 @@ export type SampleAttemptMinAggregateInputType = {
   id?: true
   orderId?: true
   version?: true
+  schemeName?: true
+  historicalCaseId?: true
+  productionMaterial?: true
+  baseCloth?: true
+  dyeType?: true
+  illuminant?: true
+  illuminantLabel?: true
+  reviewIlluminant?: true
+  reviewIlluminantLabel?: true
+  cctKelvin?: true
+  illuminanceLux?: true
+  viewingAngle?: true
+  textureGloss?: true
   deltaE?: true
   passed?: true
+  recommendation?: true
   deviation?: true
+  selected?: true
+  confirmedAt?: true
   createdAt?: true
 }
 
@@ -89,9 +172,25 @@ export type SampleAttemptMaxAggregateInputType = {
   id?: true
   orderId?: true
   version?: true
+  schemeName?: true
+  historicalCaseId?: true
+  productionMaterial?: true
+  baseCloth?: true
+  dyeType?: true
+  illuminant?: true
+  illuminantLabel?: true
+  reviewIlluminant?: true
+  reviewIlluminantLabel?: true
+  cctKelvin?: true
+  illuminanceLux?: true
+  viewingAngle?: true
+  textureGloss?: true
   deltaE?: true
   passed?: true
+  recommendation?: true
   deviation?: true
+  selected?: true
+  confirmedAt?: true
   createdAt?: true
 }
 
@@ -99,10 +198,29 @@ export type SampleAttemptCountAggregateInputType = {
   id?: true
   orderId?: true
   version?: true
+  schemeName?: true
+  targetLab?: true
   lab?: true
+  aiLab?: true
+  historicalCaseId?: true
+  productionMaterial?: true
+  baseCloth?: true
+  dyeType?: true
+  illuminant?: true
+  illuminantLabel?: true
+  reviewIlluminant?: true
+  reviewIlluminantLabel?: true
+  cctKelvin?: true
+  illuminanceLux?: true
+  viewingAngle?: true
+  textureGloss?: true
+  confirmationSnapshot?: true
   deltaE?: true
   passed?: true
+  recommendation?: true
   deviation?: true
+  selected?: true
+  confirmedAt?: true
   createdAt?: true
   _all?: true
 }
@@ -197,10 +315,29 @@ export type SampleAttemptGroupByOutputType = {
   id: string
   orderId: string
   version: string
+  schemeName: string
+  targetLab: runtime.JsonValue | null
   lab: runtime.JsonValue
+  aiLab: runtime.JsonValue | null
+  historicalCaseId: string | null
+  productionMaterial: string | null
+  baseCloth: string | null
+  dyeType: string | null
+  illuminant: string | null
+  illuminantLabel: string | null
+  reviewIlluminant: string | null
+  reviewIlluminantLabel: string | null
+  cctKelvin: number | null
+  illuminanceLux: number | null
+  viewingAngle: number | null
+  textureGloss: number | null
+  confirmationSnapshot: runtime.JsonValue | null
   deltaE: number
   passed: boolean
+  recommendation: string
   deviation: string
+  selected: boolean
+  confirmedAt: Date | null
   createdAt: Date
   _count: SampleAttemptCountAggregateOutputType | null
   _avg: SampleAttemptAvgAggregateOutputType | null
@@ -231,10 +368,29 @@ export type SampleAttemptWhereInput = {
   id?: Prisma.StringFilter<"SampleAttempt"> | string
   orderId?: Prisma.StringFilter<"SampleAttempt"> | string
   version?: Prisma.StringFilter<"SampleAttempt"> | string
+  schemeName?: Prisma.StringFilter<"SampleAttempt"> | string
+  targetLab?: Prisma.JsonNullableFilter<"SampleAttempt">
   lab?: Prisma.JsonFilter<"SampleAttempt">
+  aiLab?: Prisma.JsonNullableFilter<"SampleAttempt">
+  historicalCaseId?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  productionMaterial?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  baseCloth?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  dyeType?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  illuminant?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  illuminantLabel?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  reviewIlluminant?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  reviewIlluminantLabel?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  cctKelvin?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  illuminanceLux?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  viewingAngle?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  textureGloss?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  confirmationSnapshot?: Prisma.JsonNullableFilter<"SampleAttempt">
   deltaE?: Prisma.FloatFilter<"SampleAttempt"> | number
   passed?: Prisma.BoolFilter<"SampleAttempt"> | boolean
+  recommendation?: Prisma.StringFilter<"SampleAttempt"> | string
   deviation?: Prisma.StringFilter<"SampleAttempt"> | string
+  selected?: Prisma.BoolFilter<"SampleAttempt"> | boolean
+  confirmedAt?: Prisma.DateTimeNullableFilter<"SampleAttempt"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SampleAttempt"> | Date | string
   order?: Prisma.XOR<Prisma.ColorOrderScalarRelationFilter, Prisma.ColorOrderWhereInput>
 }
@@ -243,10 +399,29 @@ export type SampleAttemptOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  schemeName?: Prisma.SortOrder
+  targetLab?: Prisma.SortOrderInput | Prisma.SortOrder
   lab?: Prisma.SortOrder
+  aiLab?: Prisma.SortOrderInput | Prisma.SortOrder
+  historicalCaseId?: Prisma.SortOrderInput | Prisma.SortOrder
+  productionMaterial?: Prisma.SortOrderInput | Prisma.SortOrder
+  baseCloth?: Prisma.SortOrderInput | Prisma.SortOrder
+  dyeType?: Prisma.SortOrderInput | Prisma.SortOrder
+  illuminant?: Prisma.SortOrderInput | Prisma.SortOrder
+  illuminantLabel?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewIlluminant?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewIlluminantLabel?: Prisma.SortOrderInput | Prisma.SortOrder
+  cctKelvin?: Prisma.SortOrderInput | Prisma.SortOrder
+  illuminanceLux?: Prisma.SortOrderInput | Prisma.SortOrder
+  viewingAngle?: Prisma.SortOrderInput | Prisma.SortOrder
+  textureGloss?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmationSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   deltaE?: Prisma.SortOrder
   passed?: Prisma.SortOrder
+  recommendation?: Prisma.SortOrder
   deviation?: Prisma.SortOrder
+  selected?: Prisma.SortOrder
+  confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   order?: Prisma.ColorOrderOrderByWithRelationInput
 }
@@ -258,10 +433,29 @@ export type SampleAttemptWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.SampleAttemptWhereInput | Prisma.SampleAttemptWhereInput[]
   orderId?: Prisma.StringFilter<"SampleAttempt"> | string
   version?: Prisma.StringFilter<"SampleAttempt"> | string
+  schemeName?: Prisma.StringFilter<"SampleAttempt"> | string
+  targetLab?: Prisma.JsonNullableFilter<"SampleAttempt">
   lab?: Prisma.JsonFilter<"SampleAttempt">
+  aiLab?: Prisma.JsonNullableFilter<"SampleAttempt">
+  historicalCaseId?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  productionMaterial?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  baseCloth?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  dyeType?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  illuminant?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  illuminantLabel?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  reviewIlluminant?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  reviewIlluminantLabel?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  cctKelvin?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  illuminanceLux?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  viewingAngle?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  textureGloss?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  confirmationSnapshot?: Prisma.JsonNullableFilter<"SampleAttempt">
   deltaE?: Prisma.FloatFilter<"SampleAttempt"> | number
   passed?: Prisma.BoolFilter<"SampleAttempt"> | boolean
+  recommendation?: Prisma.StringFilter<"SampleAttempt"> | string
   deviation?: Prisma.StringFilter<"SampleAttempt"> | string
+  selected?: Prisma.BoolFilter<"SampleAttempt"> | boolean
+  confirmedAt?: Prisma.DateTimeNullableFilter<"SampleAttempt"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SampleAttempt"> | Date | string
   order?: Prisma.XOR<Prisma.ColorOrderScalarRelationFilter, Prisma.ColorOrderWhereInput>
 }, "id">
@@ -270,10 +464,29 @@ export type SampleAttemptOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  schemeName?: Prisma.SortOrder
+  targetLab?: Prisma.SortOrderInput | Prisma.SortOrder
   lab?: Prisma.SortOrder
+  aiLab?: Prisma.SortOrderInput | Prisma.SortOrder
+  historicalCaseId?: Prisma.SortOrderInput | Prisma.SortOrder
+  productionMaterial?: Prisma.SortOrderInput | Prisma.SortOrder
+  baseCloth?: Prisma.SortOrderInput | Prisma.SortOrder
+  dyeType?: Prisma.SortOrderInput | Prisma.SortOrder
+  illuminant?: Prisma.SortOrderInput | Prisma.SortOrder
+  illuminantLabel?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewIlluminant?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewIlluminantLabel?: Prisma.SortOrderInput | Prisma.SortOrder
+  cctKelvin?: Prisma.SortOrderInput | Prisma.SortOrder
+  illuminanceLux?: Prisma.SortOrderInput | Prisma.SortOrder
+  viewingAngle?: Prisma.SortOrderInput | Prisma.SortOrder
+  textureGloss?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmationSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   deltaE?: Prisma.SortOrder
   passed?: Prisma.SortOrder
+  recommendation?: Prisma.SortOrder
   deviation?: Prisma.SortOrder
+  selected?: Prisma.SortOrder
+  confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.SampleAttemptCountOrderByAggregateInput
   _avg?: Prisma.SampleAttemptAvgOrderByAggregateInput
@@ -289,20 +502,58 @@ export type SampleAttemptScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"SampleAttempt"> | string
   orderId?: Prisma.StringWithAggregatesFilter<"SampleAttempt"> | string
   version?: Prisma.StringWithAggregatesFilter<"SampleAttempt"> | string
+  schemeName?: Prisma.StringWithAggregatesFilter<"SampleAttempt"> | string
+  targetLab?: Prisma.JsonNullableWithAggregatesFilter<"SampleAttempt">
   lab?: Prisma.JsonWithAggregatesFilter<"SampleAttempt">
+  aiLab?: Prisma.JsonNullableWithAggregatesFilter<"SampleAttempt">
+  historicalCaseId?: Prisma.StringNullableWithAggregatesFilter<"SampleAttempt"> | string | null
+  productionMaterial?: Prisma.StringNullableWithAggregatesFilter<"SampleAttempt"> | string | null
+  baseCloth?: Prisma.StringNullableWithAggregatesFilter<"SampleAttempt"> | string | null
+  dyeType?: Prisma.StringNullableWithAggregatesFilter<"SampleAttempt"> | string | null
+  illuminant?: Prisma.StringNullableWithAggregatesFilter<"SampleAttempt"> | string | null
+  illuminantLabel?: Prisma.StringNullableWithAggregatesFilter<"SampleAttempt"> | string | null
+  reviewIlluminant?: Prisma.StringNullableWithAggregatesFilter<"SampleAttempt"> | string | null
+  reviewIlluminantLabel?: Prisma.StringNullableWithAggregatesFilter<"SampleAttempt"> | string | null
+  cctKelvin?: Prisma.IntNullableWithAggregatesFilter<"SampleAttempt"> | number | null
+  illuminanceLux?: Prisma.IntNullableWithAggregatesFilter<"SampleAttempt"> | number | null
+  viewingAngle?: Prisma.IntNullableWithAggregatesFilter<"SampleAttempt"> | number | null
+  textureGloss?: Prisma.IntNullableWithAggregatesFilter<"SampleAttempt"> | number | null
+  confirmationSnapshot?: Prisma.JsonNullableWithAggregatesFilter<"SampleAttempt">
   deltaE?: Prisma.FloatWithAggregatesFilter<"SampleAttempt"> | number
   passed?: Prisma.BoolWithAggregatesFilter<"SampleAttempt"> | boolean
+  recommendation?: Prisma.StringWithAggregatesFilter<"SampleAttempt"> | string
   deviation?: Prisma.StringWithAggregatesFilter<"SampleAttempt"> | string
+  selected?: Prisma.BoolWithAggregatesFilter<"SampleAttempt"> | boolean
+  confirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SampleAttempt"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SampleAttempt"> | Date | string
 }
 
 export type SampleAttemptCreateInput = {
   id: string
   version: string
+  schemeName?: string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  deltaE: number
-  passed: boolean
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  illuminant?: string | null
+  illuminantLabel?: string | null
+  reviewIlluminant?: string | null
+  reviewIlluminantLabel?: string | null
+  cctKelvin?: number | null
+  illuminanceLux?: number | null
+  viewingAngle?: number | null
+  textureGloss?: number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deltaE?: number
+  passed?: boolean
+  recommendation?: string
   deviation: string
+  selected?: boolean
+  confirmedAt?: Date | string | null
   createdAt?: Date | string
   order: Prisma.ColorOrderCreateNestedOneWithoutSampleAttemptsInput
 }
@@ -311,20 +562,58 @@ export type SampleAttemptUncheckedCreateInput = {
   id: string
   orderId: string
   version: string
+  schemeName?: string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  deltaE: number
-  passed: boolean
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  illuminant?: string | null
+  illuminantLabel?: string | null
+  reviewIlluminant?: string | null
+  reviewIlluminantLabel?: string | null
+  cctKelvin?: number | null
+  illuminanceLux?: number | null
+  viewingAngle?: number | null
+  textureGloss?: number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deltaE?: number
+  passed?: boolean
+  recommendation?: string
   deviation: string
+  selected?: boolean
+  confirmedAt?: Date | string | null
   createdAt?: Date | string
 }
 
 export type SampleAttemptUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
+  schemeName?: Prisma.StringFieldUpdateOperationsInput | string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cctKelvin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  illuminanceLux?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewingAngle?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  textureGloss?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deltaE?: Prisma.FloatFieldUpdateOperationsInput | number
   passed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recommendation?: Prisma.StringFieldUpdateOperationsInput | string
   deviation?: Prisma.StringFieldUpdateOperationsInput | string
+  selected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   order?: Prisma.ColorOrderUpdateOneRequiredWithoutSampleAttemptsNestedInput
 }
@@ -333,10 +622,29 @@ export type SampleAttemptUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
+  schemeName?: Prisma.StringFieldUpdateOperationsInput | string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cctKelvin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  illuminanceLux?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewingAngle?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  textureGloss?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deltaE?: Prisma.FloatFieldUpdateOperationsInput | number
   passed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recommendation?: Prisma.StringFieldUpdateOperationsInput | string
   deviation?: Prisma.StringFieldUpdateOperationsInput | string
+  selected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -344,20 +652,58 @@ export type SampleAttemptCreateManyInput = {
   id: string
   orderId: string
   version: string
+  schemeName?: string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  deltaE: number
-  passed: boolean
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  illuminant?: string | null
+  illuminantLabel?: string | null
+  reviewIlluminant?: string | null
+  reviewIlluminantLabel?: string | null
+  cctKelvin?: number | null
+  illuminanceLux?: number | null
+  viewingAngle?: number | null
+  textureGloss?: number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deltaE?: number
+  passed?: boolean
+  recommendation?: string
   deviation: string
+  selected?: boolean
+  confirmedAt?: Date | string | null
   createdAt?: Date | string
 }
 
 export type SampleAttemptUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
+  schemeName?: Prisma.StringFieldUpdateOperationsInput | string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cctKelvin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  illuminanceLux?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewingAngle?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  textureGloss?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deltaE?: Prisma.FloatFieldUpdateOperationsInput | number
   passed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recommendation?: Prisma.StringFieldUpdateOperationsInput | string
   deviation?: Prisma.StringFieldUpdateOperationsInput | string
+  selected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -365,10 +711,29 @@ export type SampleAttemptUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
+  schemeName?: Prisma.StringFieldUpdateOperationsInput | string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cctKelvin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  illuminanceLux?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewingAngle?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  textureGloss?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deltaE?: Prisma.FloatFieldUpdateOperationsInput | number
   passed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recommendation?: Prisma.StringFieldUpdateOperationsInput | string
   deviation?: Prisma.StringFieldUpdateOperationsInput | string
+  selected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -386,14 +751,37 @@ export type SampleAttemptCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  schemeName?: Prisma.SortOrder
+  targetLab?: Prisma.SortOrder
   lab?: Prisma.SortOrder
+  aiLab?: Prisma.SortOrder
+  historicalCaseId?: Prisma.SortOrder
+  productionMaterial?: Prisma.SortOrder
+  baseCloth?: Prisma.SortOrder
+  dyeType?: Prisma.SortOrder
+  illuminant?: Prisma.SortOrder
+  illuminantLabel?: Prisma.SortOrder
+  reviewIlluminant?: Prisma.SortOrder
+  reviewIlluminantLabel?: Prisma.SortOrder
+  cctKelvin?: Prisma.SortOrder
+  illuminanceLux?: Prisma.SortOrder
+  viewingAngle?: Prisma.SortOrder
+  textureGloss?: Prisma.SortOrder
+  confirmationSnapshot?: Prisma.SortOrder
   deltaE?: Prisma.SortOrder
   passed?: Prisma.SortOrder
+  recommendation?: Prisma.SortOrder
   deviation?: Prisma.SortOrder
+  selected?: Prisma.SortOrder
+  confirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type SampleAttemptAvgOrderByAggregateInput = {
+  cctKelvin?: Prisma.SortOrder
+  illuminanceLux?: Prisma.SortOrder
+  viewingAngle?: Prisma.SortOrder
+  textureGloss?: Prisma.SortOrder
   deltaE?: Prisma.SortOrder
 }
 
@@ -401,9 +789,25 @@ export type SampleAttemptMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  schemeName?: Prisma.SortOrder
+  historicalCaseId?: Prisma.SortOrder
+  productionMaterial?: Prisma.SortOrder
+  baseCloth?: Prisma.SortOrder
+  dyeType?: Prisma.SortOrder
+  illuminant?: Prisma.SortOrder
+  illuminantLabel?: Prisma.SortOrder
+  reviewIlluminant?: Prisma.SortOrder
+  reviewIlluminantLabel?: Prisma.SortOrder
+  cctKelvin?: Prisma.SortOrder
+  illuminanceLux?: Prisma.SortOrder
+  viewingAngle?: Prisma.SortOrder
+  textureGloss?: Prisma.SortOrder
   deltaE?: Prisma.SortOrder
   passed?: Prisma.SortOrder
+  recommendation?: Prisma.SortOrder
   deviation?: Prisma.SortOrder
+  selected?: Prisma.SortOrder
+  confirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -411,13 +815,33 @@ export type SampleAttemptMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  schemeName?: Prisma.SortOrder
+  historicalCaseId?: Prisma.SortOrder
+  productionMaterial?: Prisma.SortOrder
+  baseCloth?: Prisma.SortOrder
+  dyeType?: Prisma.SortOrder
+  illuminant?: Prisma.SortOrder
+  illuminantLabel?: Prisma.SortOrder
+  reviewIlluminant?: Prisma.SortOrder
+  reviewIlluminantLabel?: Prisma.SortOrder
+  cctKelvin?: Prisma.SortOrder
+  illuminanceLux?: Prisma.SortOrder
+  viewingAngle?: Prisma.SortOrder
+  textureGloss?: Prisma.SortOrder
   deltaE?: Prisma.SortOrder
   passed?: Prisma.SortOrder
+  recommendation?: Prisma.SortOrder
   deviation?: Prisma.SortOrder
+  selected?: Prisma.SortOrder
+  confirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type SampleAttemptSumOrderByAggregateInput = {
+  cctKelvin?: Prisma.SortOrder
+  illuminanceLux?: Prisma.SortOrder
+  viewingAngle?: Prisma.SortOrder
+  textureGloss?: Prisma.SortOrder
   deltaE?: Prisma.SortOrder
 }
 
@@ -463,27 +887,69 @@ export type SampleAttemptUncheckedUpdateManyWithoutOrderNestedInput = {
   deleteMany?: Prisma.SampleAttemptScalarWhereInput | Prisma.SampleAttemptScalarWhereInput[]
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type SampleAttemptCreateWithoutOrderInput = {
   id: string
   version: string
+  schemeName?: string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  deltaE: number
-  passed: boolean
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  illuminant?: string | null
+  illuminantLabel?: string | null
+  reviewIlluminant?: string | null
+  reviewIlluminantLabel?: string | null
+  cctKelvin?: number | null
+  illuminanceLux?: number | null
+  viewingAngle?: number | null
+  textureGloss?: number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deltaE?: number
+  passed?: boolean
+  recommendation?: string
   deviation: string
+  selected?: boolean
+  confirmedAt?: Date | string | null
   createdAt?: Date | string
 }
 
 export type SampleAttemptUncheckedCreateWithoutOrderInput = {
   id: string
   version: string
+  schemeName?: string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  deltaE: number
-  passed: boolean
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  illuminant?: string | null
+  illuminantLabel?: string | null
+  reviewIlluminant?: string | null
+  reviewIlluminantLabel?: string | null
+  cctKelvin?: number | null
+  illuminanceLux?: number | null
+  viewingAngle?: number | null
+  textureGloss?: number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deltaE?: number
+  passed?: boolean
+  recommendation?: string
   deviation: string
+  selected?: boolean
+  confirmedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -519,50 +985,145 @@ export type SampleAttemptScalarWhereInput = {
   id?: Prisma.StringFilter<"SampleAttempt"> | string
   orderId?: Prisma.StringFilter<"SampleAttempt"> | string
   version?: Prisma.StringFilter<"SampleAttempt"> | string
+  schemeName?: Prisma.StringFilter<"SampleAttempt"> | string
+  targetLab?: Prisma.JsonNullableFilter<"SampleAttempt">
   lab?: Prisma.JsonFilter<"SampleAttempt">
+  aiLab?: Prisma.JsonNullableFilter<"SampleAttempt">
+  historicalCaseId?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  productionMaterial?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  baseCloth?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  dyeType?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  illuminant?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  illuminantLabel?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  reviewIlluminant?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  reviewIlluminantLabel?: Prisma.StringNullableFilter<"SampleAttempt"> | string | null
+  cctKelvin?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  illuminanceLux?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  viewingAngle?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  textureGloss?: Prisma.IntNullableFilter<"SampleAttempt"> | number | null
+  confirmationSnapshot?: Prisma.JsonNullableFilter<"SampleAttempt">
   deltaE?: Prisma.FloatFilter<"SampleAttempt"> | number
   passed?: Prisma.BoolFilter<"SampleAttempt"> | boolean
+  recommendation?: Prisma.StringFilter<"SampleAttempt"> | string
   deviation?: Prisma.StringFilter<"SampleAttempt"> | string
+  selected?: Prisma.BoolFilter<"SampleAttempt"> | boolean
+  confirmedAt?: Prisma.DateTimeNullableFilter<"SampleAttempt"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SampleAttempt"> | Date | string
 }
 
 export type SampleAttemptCreateManyOrderInput = {
   id: string
   version: string
+  schemeName?: string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  deltaE: number
-  passed: boolean
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: string | null
+  productionMaterial?: string | null
+  baseCloth?: string | null
+  dyeType?: string | null
+  illuminant?: string | null
+  illuminantLabel?: string | null
+  reviewIlluminant?: string | null
+  reviewIlluminantLabel?: string | null
+  cctKelvin?: number | null
+  illuminanceLux?: number | null
+  viewingAngle?: number | null
+  textureGloss?: number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deltaE?: number
+  passed?: boolean
+  recommendation?: string
   deviation: string
+  selected?: boolean
+  confirmedAt?: Date | string | null
   createdAt?: Date | string
 }
 
 export type SampleAttemptUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
+  schemeName?: Prisma.StringFieldUpdateOperationsInput | string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cctKelvin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  illuminanceLux?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewingAngle?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  textureGloss?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deltaE?: Prisma.FloatFieldUpdateOperationsInput | number
   passed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recommendation?: Prisma.StringFieldUpdateOperationsInput | string
   deviation?: Prisma.StringFieldUpdateOperationsInput | string
+  selected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SampleAttemptUncheckedUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
+  schemeName?: Prisma.StringFieldUpdateOperationsInput | string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cctKelvin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  illuminanceLux?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewingAngle?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  textureGloss?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deltaE?: Prisma.FloatFieldUpdateOperationsInput | number
   passed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recommendation?: Prisma.StringFieldUpdateOperationsInput | string
   deviation?: Prisma.StringFieldUpdateOperationsInput | string
+  selected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SampleAttemptUncheckedUpdateManyWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
+  schemeName?: Prisma.StringFieldUpdateOperationsInput | string
+  targetLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lab?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  aiLab?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  historicalCaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productionMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseCloth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dyeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  illuminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewIlluminantLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cctKelvin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  illuminanceLux?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewingAngle?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  textureGloss?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  confirmationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deltaE?: Prisma.FloatFieldUpdateOperationsInput | number
   passed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recommendation?: Prisma.StringFieldUpdateOperationsInput | string
   deviation?: Prisma.StringFieldUpdateOperationsInput | string
+  selected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -572,10 +1133,29 @@ export type SampleAttemptSelect<ExtArgs extends runtime.Types.Extensions.Interna
   id?: boolean
   orderId?: boolean
   version?: boolean
+  schemeName?: boolean
+  targetLab?: boolean
   lab?: boolean
+  aiLab?: boolean
+  historicalCaseId?: boolean
+  productionMaterial?: boolean
+  baseCloth?: boolean
+  dyeType?: boolean
+  illuminant?: boolean
+  illuminantLabel?: boolean
+  reviewIlluminant?: boolean
+  reviewIlluminantLabel?: boolean
+  cctKelvin?: boolean
+  illuminanceLux?: boolean
+  viewingAngle?: boolean
+  textureGloss?: boolean
+  confirmationSnapshot?: boolean
   deltaE?: boolean
   passed?: boolean
+  recommendation?: boolean
   deviation?: boolean
+  selected?: boolean
+  confirmedAt?: boolean
   createdAt?: boolean
   order?: boolean | Prisma.ColorOrderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["sampleAttempt"]>
@@ -584,10 +1164,29 @@ export type SampleAttemptSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   id?: boolean
   orderId?: boolean
   version?: boolean
+  schemeName?: boolean
+  targetLab?: boolean
   lab?: boolean
+  aiLab?: boolean
+  historicalCaseId?: boolean
+  productionMaterial?: boolean
+  baseCloth?: boolean
+  dyeType?: boolean
+  illuminant?: boolean
+  illuminantLabel?: boolean
+  reviewIlluminant?: boolean
+  reviewIlluminantLabel?: boolean
+  cctKelvin?: boolean
+  illuminanceLux?: boolean
+  viewingAngle?: boolean
+  textureGloss?: boolean
+  confirmationSnapshot?: boolean
   deltaE?: boolean
   passed?: boolean
+  recommendation?: boolean
   deviation?: boolean
+  selected?: boolean
+  confirmedAt?: boolean
   createdAt?: boolean
   order?: boolean | Prisma.ColorOrderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["sampleAttempt"]>
@@ -596,10 +1195,29 @@ export type SampleAttemptSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   id?: boolean
   orderId?: boolean
   version?: boolean
+  schemeName?: boolean
+  targetLab?: boolean
   lab?: boolean
+  aiLab?: boolean
+  historicalCaseId?: boolean
+  productionMaterial?: boolean
+  baseCloth?: boolean
+  dyeType?: boolean
+  illuminant?: boolean
+  illuminantLabel?: boolean
+  reviewIlluminant?: boolean
+  reviewIlluminantLabel?: boolean
+  cctKelvin?: boolean
+  illuminanceLux?: boolean
+  viewingAngle?: boolean
+  textureGloss?: boolean
+  confirmationSnapshot?: boolean
   deltaE?: boolean
   passed?: boolean
+  recommendation?: boolean
   deviation?: boolean
+  selected?: boolean
+  confirmedAt?: boolean
   createdAt?: boolean
   order?: boolean | Prisma.ColorOrderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["sampleAttempt"]>
@@ -608,14 +1226,33 @@ export type SampleAttemptSelectScalar = {
   id?: boolean
   orderId?: boolean
   version?: boolean
+  schemeName?: boolean
+  targetLab?: boolean
   lab?: boolean
+  aiLab?: boolean
+  historicalCaseId?: boolean
+  productionMaterial?: boolean
+  baseCloth?: boolean
+  dyeType?: boolean
+  illuminant?: boolean
+  illuminantLabel?: boolean
+  reviewIlluminant?: boolean
+  reviewIlluminantLabel?: boolean
+  cctKelvin?: boolean
+  illuminanceLux?: boolean
+  viewingAngle?: boolean
+  textureGloss?: boolean
+  confirmationSnapshot?: boolean
   deltaE?: boolean
   passed?: boolean
+  recommendation?: boolean
   deviation?: boolean
+  selected?: boolean
+  confirmedAt?: boolean
   createdAt?: boolean
 }
 
-export type SampleAttemptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "version" | "lab" | "deltaE" | "passed" | "deviation" | "createdAt", ExtArgs["result"]["sampleAttempt"]>
+export type SampleAttemptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "version" | "schemeName" | "targetLab" | "lab" | "aiLab" | "historicalCaseId" | "productionMaterial" | "baseCloth" | "dyeType" | "illuminant" | "illuminantLabel" | "reviewIlluminant" | "reviewIlluminantLabel" | "cctKelvin" | "illuminanceLux" | "viewingAngle" | "textureGloss" | "confirmationSnapshot" | "deltaE" | "passed" | "recommendation" | "deviation" | "selected" | "confirmedAt" | "createdAt", ExtArgs["result"]["sampleAttempt"]>
 export type SampleAttemptInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.ColorOrderDefaultArgs<ExtArgs>
 }
@@ -635,10 +1272,29 @@ export type $SampleAttemptPayload<ExtArgs extends runtime.Types.Extensions.Inter
     id: string
     orderId: string
     version: string
+    schemeName: string
+    targetLab: runtime.JsonValue | null
     lab: runtime.JsonValue
+    aiLab: runtime.JsonValue | null
+    historicalCaseId: string | null
+    productionMaterial: string | null
+    baseCloth: string | null
+    dyeType: string | null
+    illuminant: string | null
+    illuminantLabel: string | null
+    reviewIlluminant: string | null
+    reviewIlluminantLabel: string | null
+    cctKelvin: number | null
+    illuminanceLux: number | null
+    viewingAngle: number | null
+    textureGloss: number | null
+    confirmationSnapshot: runtime.JsonValue | null
     deltaE: number
     passed: boolean
+    recommendation: string
     deviation: string
+    selected: boolean
+    confirmedAt: Date | null
     createdAt: Date
   }, ExtArgs["result"]["sampleAttempt"]>
   composites: {}
@@ -1067,10 +1723,29 @@ export interface SampleAttemptFieldRefs {
   readonly id: Prisma.FieldRef<"SampleAttempt", 'String'>
   readonly orderId: Prisma.FieldRef<"SampleAttempt", 'String'>
   readonly version: Prisma.FieldRef<"SampleAttempt", 'String'>
+  readonly schemeName: Prisma.FieldRef<"SampleAttempt", 'String'>
+  readonly targetLab: Prisma.FieldRef<"SampleAttempt", 'Json'>
   readonly lab: Prisma.FieldRef<"SampleAttempt", 'Json'>
+  readonly aiLab: Prisma.FieldRef<"SampleAttempt", 'Json'>
+  readonly historicalCaseId: Prisma.FieldRef<"SampleAttempt", 'String'>
+  readonly productionMaterial: Prisma.FieldRef<"SampleAttempt", 'String'>
+  readonly baseCloth: Prisma.FieldRef<"SampleAttempt", 'String'>
+  readonly dyeType: Prisma.FieldRef<"SampleAttempt", 'String'>
+  readonly illuminant: Prisma.FieldRef<"SampleAttempt", 'String'>
+  readonly illuminantLabel: Prisma.FieldRef<"SampleAttempt", 'String'>
+  readonly reviewIlluminant: Prisma.FieldRef<"SampleAttempt", 'String'>
+  readonly reviewIlluminantLabel: Prisma.FieldRef<"SampleAttempt", 'String'>
+  readonly cctKelvin: Prisma.FieldRef<"SampleAttempt", 'Int'>
+  readonly illuminanceLux: Prisma.FieldRef<"SampleAttempt", 'Int'>
+  readonly viewingAngle: Prisma.FieldRef<"SampleAttempt", 'Int'>
+  readonly textureGloss: Prisma.FieldRef<"SampleAttempt", 'Int'>
+  readonly confirmationSnapshot: Prisma.FieldRef<"SampleAttempt", 'Json'>
   readonly deltaE: Prisma.FieldRef<"SampleAttempt", 'Float'>
   readonly passed: Prisma.FieldRef<"SampleAttempt", 'Boolean'>
+  readonly recommendation: Prisma.FieldRef<"SampleAttempt", 'String'>
   readonly deviation: Prisma.FieldRef<"SampleAttempt", 'String'>
+  readonly selected: Prisma.FieldRef<"SampleAttempt", 'Boolean'>
+  readonly confirmedAt: Prisma.FieldRef<"SampleAttempt", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"SampleAttempt", 'DateTime'>
 }
     

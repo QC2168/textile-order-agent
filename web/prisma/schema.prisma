@@ -1,0 +1,66 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../app/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model ColorOrder {
+  id               String          @id @default(cuid())
+  customerInput    String
+  status           String
+  confirmedFields  Json?
+  selectedCaseId   String?
+  selectedSampleId String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  analysis         AnalysisResult?
+  sampleAttempts   SampleAttempt[]
+  traceEvents      TraceEvent[]
+}
+
+model AnalysisResult {
+  id            String     @id @default(cuid())
+  orderId       String     @unique
+  order         ColorOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  extractedJson Json
+  missingFields Json
+  confidence    Float
+  source        String
+  createdAt     DateTime   @default(now())
+}
+
+model HistoricalCase {
+  id               String   @id
+  name             String
+  fabric           String
+  baseCloth        String
+  lab              Json
+  similarityReason String
+  riskNote         String
+  createdAt        DateTime @default(now())
+}
+
+model SampleAttempt {
+  id        String     @id
+  orderId   String
+  order     ColorOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  version   String
+  lab       Json
+  deltaE    Float
+  passed    Boolean
+  deviation String
+  createdAt DateTime   @default(now())
+}
+
+model TraceEvent {
+  id        String     @id @default(cuid())
+  orderId   String
+  order     ColorOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  label     String
+  detail    String
+  createdAt DateTime   @default(now())
+}

@@ -195,6 +195,22 @@ def _parse_json(value: Any) -> Any:
     return value
 
 
+def _json_default(obj: Any) -> str:
+    """JSON 序列化 fallback：datetime → isoformat，其他 → str"""
+    if hasattr(obj, "isoformat"):
+        return obj.isoformat()
+    return str(obj)
+
+
+def _to_str(value: Any, default: str = "") -> str:
+    """安全转字符串，datetime 对象转 isoformat"""
+    if value is None:
+        return default
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+    return str(value)
+
+
 def _order_summary(order: dict[str, Any]) -> dict[str, Any]:
     confirmed = _parse_json(order.get("confirmedFields"))
     return {
@@ -212,7 +228,7 @@ def _order_summary(order: dict[str, Any]) -> dict[str, Any]:
         "confirmed_fields": confirmed,
         "selected_case_id": order.get("selectedCaseId"),
         "selected_sample_id": order.get("selectedSampleId"),
-        "created_at": order.get("createdAt", ""),
+        "created_at": _to_str(order.get("createdAt")),
     }
 
 
@@ -234,7 +250,7 @@ def get_order_timeline(order_id: str) -> dict[str, Any]:
             "detail": e["detail"],
             "actor": e.get("actor", ""),
             "event_type": e.get("eventType", ""),
-            "created_at": e.get("createdAt", ""),
+            "created_at": _to_str(e.get("createdAt")),
         }
         for e in events
     ]
@@ -337,7 +353,7 @@ def check_order_status(status: str | None = None) -> dict[str, Any]:
                 "status": o.get("status", ""),
                 "status_label": _STATUS_LABELS.get(o.get("status", ""), o.get("status", "")),
                 "customer_input": (o.get("customerInput", "") or "")[:80],
-                "created_at": o.get("createdAt", ""),
+                "created_at": _to_str(o.get("createdAt")),
             }
             for o in orders
         ],
@@ -389,7 +405,7 @@ def execute_tool(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
 
 def route_demo_tools(content: str) -> list[dict[str, Any]]:
     """规则 fallback：按关键词匹配工具，不依赖大模型 tool_call"""
-    id_match = re.search(r"[a-z0-9]{20,30}", content)
+    id_match = re.search(r"[a-z0-9\-]{20,40}", content)
     order_id = id_match.group(0) if id_match else None
 
     if any(w in content for w in ["分析", "提取", "AI", "confidence"]):
@@ -529,7 +545,7 @@ def _tool_context_message(tool_results: list[dict[str, Any]]) -> dict[str, str]:
     return {
         "role": "system",
         "content": "以下是本地调色工具返回结果，请只基于这些结果回答：\n"
-        + json.dumps(tool_results, ensure_ascii=False, indent=2),
+        + json.dumps(tool_results, ensure_ascii=False, indent=2, default=_json_default),
     }
 
 
@@ -646,7 +662,7 @@ async def on_message(message: cl.Message):
                 final_messages.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
-                    "content": json.dumps(result, ensure_ascii=False),
+                    "content": json.dumps(result, ensure_ascii=False, default=_json_default),
                 })
                 tool_results.append({"tool": tool_call.function.name, "arguments": arguments, "result": result})
         else:

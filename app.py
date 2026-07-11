@@ -22,44 +22,12 @@ from database import (
     get_historical_cases,
 )
 
-# ============ 加载本地环境变量 ============
-
-
-def _load_local_env() -> None:
-    if not os.path.exists(".env"):
-        return
-    with open(".env", encoding="utf-8") as env_file:
-        for line in env_file:
-            key, sep, value = line.strip().partition("=")
-            if sep and key and not key.startswith("#"):
-                os.environ.setdefault(key, value)
-
-
-_load_local_env()
-
-
-def _model_defaults() -> tuple[str, str]:
-    explicit_base_url = os.getenv("MODEL_BASE_URL") or os.getenv("OPENAI_BASE_URL")
-    explicit_model = os.getenv("MODEL_ID")
-    if explicit_base_url or os.getenv("MODEL_API_KEY") or os.getenv("DEEPSEEK_API_KEY"):
-        return explicit_base_url or "https://api.deepseek.com", explicit_model or "deepseek-v4-flash"
-    if os.getenv("DASHSCOPE_API_KEY"):
-        return "https://dashscope.aliyuncs.com/compatible-mode/v1", explicit_model or "qwen-plus"
-    return "https://api.deepseek.com", explicit_model or "deepseek-v4-flash"
-
-
-MODEL_BASE_URL, MODEL_ID = _model_defaults()
-MODEL_API_KEY = (
-    os.getenv("MODEL_API_KEY")
-    or os.getenv("DEEPSEEK_API_KEY")
-    or os.getenv("DASHSCOPE_API_KEY")
-    or os.getenv("OPENAI_API_KEY")
-)
-
+# ============ 模型配置（从 .env 读取） ============
 client = AsyncOpenAI(
-    base_url=MODEL_BASE_URL,
-    api_key=MODEL_API_KEY or "missing-api-key",
+    base_url=os.getenv("MODEL_BASE_URL", "https://api.deepseek.com"),
+    api_key=os.getenv("MODEL_API_KEY", ""),
 )
+MODEL_ID = os.getenv("MODEL_ID", "deepseek-chat")
 
 # ============ ColorBridge 调色 Agent 配置 ============
 SYSTEM_PROMPT = """
@@ -438,8 +406,6 @@ def route_demo_tools(content: str) -> list[dict[str, Any]]:
 
 
 async def call_model(messages: list[dict[str, Any]], tools: list[dict[str, Any]] | None = None):
-    if not MODEL_API_KEY:
-        raise RuntimeError("未配置模型 API Key，请设置 MODEL_API_KEY、DEEPSEEK_API_KEY、DASHSCOPE_API_KEY 或 OPENAI_API_KEY。")
     kwargs = {"model": MODEL_ID, "messages": messages}
     if tools:
         kwargs["tools"] = tools

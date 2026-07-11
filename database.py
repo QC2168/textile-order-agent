@@ -32,8 +32,7 @@ def _row_to_dict(row: tuple, columns: list[str]) -> dict[str, Any]:
 
 
 def _dict_cursor(conn):
-    """返回 cursor_factory 为 RealDictCursor 的连接下的 cursor（只读场景）"""
-    conn.row_factory = psycopg2.extras.RealDictCursor
+    """返回 RealDictCursor（只读场景）"""
     return conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
 

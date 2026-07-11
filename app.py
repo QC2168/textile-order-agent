@@ -7,6 +7,10 @@ import json
 import os
 import re
 from typing import Any
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import pandas as pd
 from openai import AsyncOpenAI
 from database import (

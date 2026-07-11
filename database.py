@@ -124,7 +124,7 @@ def update_order(order_id: str, updates: dict[str, Any]) -> dict[str, Any]:
         return {"success": False, "error": "没有可更新的有效字段"}
 
     now = datetime.now(timezone.utc).isoformat()
-    filtered['"updatedAt"'] = now
+    filtered["updatedAt"] = now
     set_clause = ", ".join(f'"{k}" = %s' for k in filtered)
     values = list(filtered.values()) + [order_id]
 

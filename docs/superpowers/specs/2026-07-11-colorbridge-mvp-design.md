@@ -1,199 +1,199 @@
-# ColorBridge MVP Design
+# 色译通 ColorBridge MVP 设计
 
-Date: 2026-07-11
+日期：2026-07-11
 
-## Goal
+## 目标
 
-Build the smallest demo that makes ColorBridge understandable and reliable in a pitch:
+做一个最小但能讲清楚、能稳定演示的 ColorBridge Demo：
 
-Customer fuzzy color language becomes a confirmed, traceable color sampling task.
+把客户模糊的颜色表达，转成可确认、可打样、可追溯的标准色需求任务。
 
-The main entry is a Next.js product workspace. Chainlit remains available for AI prompt tuning and backup demonstration, but it is not the primary demo surface.
+主入口是 Next.js 产品工作台。Chainlit 保留为 AI 提示词调优和备用演示入口，但不是主要演示界面。
 
-## Demo Scope
+## Demo 范围
 
-The MVP is a single 6-step workflow:
+MVP 是一个单页 6 步流程：
 
-1. Load customer chat
-2. Run AI analysis
-3. Confirm missing fields
-4. Retrieve similar historical cases
-5. Compare sampling Lab and Delta E results
-6. Generate customer confirmation and traceability view
+1. 载入客户聊天
+2. 运行 AI 分析
+3. 人工确认缺失字段
+4. 检索相似历史案例
+5. 对比打样 Lab 和 Delta E 结果
+6. 生成客户确认卡和追溯视图
 
-The demo must work without login, external devices, ERP, MES, or real file upload. It should be able to run from seeded demo data if the model or network is unavailable.
+Demo 不做登录、外部设备、ERP、MES 或真实文件上传。模型或网络不可用时，也必须能通过种子数据和缓存结果跑完整流程。
 
-## Product Surface
+## 产品界面
 
-The first screen is the actual workspace, not a marketing landing page.
+第一屏直接进入工作台，不做营销落地页。
 
-Layout:
+页面布局：
 
-- Header: ColorBridge name, one-sentence product positioning, current demo status
-- Left rail: six workflow steps with progress states
-- Main panel: active step content and primary action
-- Right panel: order summary, Lab color chips, risk notes, and version trace
-- Demo controls: load demo case and reset demo
+- 顶部：ColorBridge 名称、产品一句话、当前 Demo 状态
+- 左侧：6 个流程步骤和完成状态
+- 中间：当前步骤的主操作区
+- 右侧：订单摘要、Lab 色块、风险提示、版本追溯
+- 演示控制：载入演示案例、重置 Demo
 
-The UI should feel like a lightweight factory sampling tool: compact, scannable, and operational. It should avoid oversized landing sections and unnecessary explanatory copy.
+界面气质应接近轻量工厂打样工具：紧凑、可扫读、偏操作台。避免大面积宣传文案和过度装饰。
 
-## Data Model
+## 数据模型
 
-Use SQLite with Prisma for the smallest useful persistence layer.
+使用 SQLite + Prisma 做最小必要持久化。
 
-Required persisted data:
+需要保存的数据：
 
-- Demo order
-- Customer input text
-- Structured AI analysis JSON
-- Confirmed requirement fields
-- Historical case matches
-- Sampling attempts
-- Trace events
+- Demo 订单
+- 客户原始输入
+- AI 结构化分析 JSON
+- 人工确认后的需求字段
+- 历史案例匹配结果
+- 打样版本
+- 追溯事件
 
-Suggested Prisma models:
+建议 Prisma 模型：
 
-- `ColorOrder`: one demo order with raw customer text, status, and confirmed fields
-- `AnalysisResult`: structured extraction JSON, missing fields, confidence, source
-- `HistoricalCase`: seeded reference cases for similarity display
-- `SampleAttempt`: Lab values, Delta E, pass/fail state, deviation note
-- `TraceEvent`: timeline entries for confirmation and version history
+- `ColorOrder`：一个 Demo 订单，保存客户原文、状态和确认字段
+- `AnalysisResult`：结构化提取 JSON、缺失字段、置信度、来源
+- `HistoricalCase`：种子历史案例，用于相似案例展示
+- `SampleAttempt`：Lab 值、Delta E、是否达标、偏差说明
+- `TraceEvent`：确认和版本追溯时间线
 
-No user, organization, permission, billing, or audit user model is needed for MVP.
+MVP 不需要用户、组织、权限、计费或审计用户模型。
 
-## AI Behavior
+## AI 行为
 
-AI output should be constrained to structured JSON:
+AI 输出必须约束为结构化 JSON：
 
-- Color intent
-- Target color name
-- Avoided hue or risk
-- Fabric
-- Base cloth
-- Light source
-- Target Lab
-- Delta E threshold
-- Missing fields
-- Confidence
-- Follow-up questions
+- 颜色意图
+- 目标颜色名称
+- 需要避免的色相或风险
+- 面料
+- 基布
+- 光源
+- 目标 Lab
+- Delta E 阈值
+- 缺失字段
+- 置信度
+- 追问问题
 
-Implementation priority:
+实现优先级：
 
-1. Use a deterministic cached JSON result for the main demo path.
-2. Optionally call the existing Chainlit/LLM flow or a small service function for live analysis.
-3. If live analysis fails or times out, show the cached result and continue the workflow.
+1. 主 Demo 路径优先使用确定性的缓存 JSON，保证稳定。
+2. 有余力时再调用现有 Chainlit/LLM 流程，或封装一个小的服务函数做实时分析。
+3. 实时分析失败或超时时，自动展示缓存结果并继续流程。
 
-The product should never claim automatic production formula generation. Historical cases are candidate references for a colorist to review.
+产品口径上，不能声称自动生成生产配方。历史案例只是给调色师审核的候选参考。
 
-## Workflow Details
+## 流程细节
 
-### 1. Load Customer Chat
+### 1. 载入客户聊天
 
-One button loads the main demo sentence:
+一个按钮载入主演示句子：
 
-"高级一点的雾霾蓝，别太紫，像上次那块，做在棉针织上。"
+“高级一点的雾霾蓝，别太紫，像上次那块，做在棉针织上。”
 
-The page shows the raw input and creates or resets the demo order.
+页面展示原始输入，并创建或重置 Demo 订单。
 
-### 2. AI Analysis
+### 2. AI 分析
 
-The page shows extracted fields, missing items, confidence, and follow-up questions.
+页面展示提取字段、缺失项、置信度和追问问题。
 
-Minimum visible fields:
+最少展示字段：
 
-- Color intent: advanced muted blue
-- Risk: avoid purple cast
-- Fabric: cotton knit
-- Missing fields: light source, base cloth, target Lab, Delta E threshold
-- Confidence: displayed as a percentage or label
+- 颜色意图：高级感、低饱和雾霾蓝
+- 风险：避免偏紫
+- 面料：棉针织
+- 缺失字段：光源、基布、目标 Lab、Delta E 阈值
+- 置信度：百分比或标签均可
 
-### 3. Confirm Fields
+### 3. 人工确认字段
 
-The operator confirms:
+操作员确认：
 
-- Light source: D65
-- Base cloth: warm white
-- Target Lab: demo values
-- Delta E threshold: 1.0 or 1.5
+- 光源：D65
+- 基布：暖底白布
+- 目标 Lab：演示数据
+- Delta E 阈值：1.0 或 1.5
 
-The form must be editable, but defaults should be prefilled for fast presentation.
+表单必须可编辑，但默认值应预填，方便路演时快速操作。
 
-### 4. Historical Cases
+### 4. 历史案例
 
-Show top 3 seeded historical cases with:
+展示 3 条种子历史案例：
 
-- Case name
-- Fabric/base cloth
-- Lab values
-- Similarity reason
-- Risk note
+- 案例名称
+- 面料和基布
+- Lab 值
+- 相似原因
+- 风险提示
 
-The search can be deterministic for MVP. Similarity does not need a real embedding model.
+MVP 阶段可以使用确定性匹配，不需要真实 embedding 或复杂相似度模型。
 
-### 5. Sampling Comparison
+### 5. 打样对比
 
-Show two built-in sample attempts:
+展示两次内置打样结果：
 
-- Attempt 1: fails Delta E threshold and explains bias direction
-- Attempt 2: passes Delta E threshold
+- 第一次：Delta E 超阈值，不合格，并解释偏差方向
+- 第二次：Delta E 达标
 
-Delta E calculation can be implemented locally from Lab values or stored in seed data. The screen should make pass/fail obvious.
+Delta E 可以本地计算，也可以存在种子数据里。页面必须清楚展示通过/未通过状态。
 
-### 6. Confirmation And Traceability
+### 6. 确认与追溯
 
-Show a customer confirmation card and a version timeline:
+展示客户确认卡和版本时间线：
 
-- Confirmed color requirement
-- Light source and threshold
-- Selected reference case
-- Winning sample attempt
-- Trace events from input to confirmation
+- 已确认色彩需求
+- 光源和 Delta E 阈值
+- 选中的参考案例
+- 达标打样版本
+- 从输入到确认的追溯事件
 
-Export can be a report preview in MVP. Real PDF export is optional and out of scope unless time remains.
+导出功能在 MVP 中可以先做成“报告预览”。真实 PDF 导出除非最后有时间，否则不做。
 
-## Error Handling
+## 错误处理
 
-The demo should keep moving even when AI fails:
+Demo 必须在 AI 失败时继续往下走：
 
-- If analysis fails, display cached demo analysis.
-- If database is empty, seed demo data.
-- If Prisma access fails during development, show a clear error state instead of a blank page.
+- AI 分析失败时，展示缓存分析结果。
+- 数据库为空时，自动写入或读取演示种子数据。
+- Prisma 访问失败时，展示清晰错误状态，不能白屏。
 
-## Testing
+## 测试
 
-Minimum verification:
+最小验证：
 
-- Next.js build or lint passes
-- Prisma schema validates
-- Seeded demo data can be loaded
-- Six-step workflow can be completed twice after reset
-- AI fallback path can complete the workflow without network
+- Next.js build 或 lint 通过
+- Prisma schema validate 通过
+- 能载入种子 Demo 数据
+- 重置后可以连续跑完两次 6 步流程
+- 断网或 AI 不可用时，缓存路径仍能跑完整流程
 
-## Out Of Scope
+## 不做范围
 
-- Login and user management
-- Real multi-tenant data model
-- Real file upload
-- Real color scanner integration
-- Automatic dye formula generation
-- ERP/MES integration
-- Production deployment
-- Full PDF generation
+- 登录和用户管理
+- 真实多租户数据模型
+- 真实文件上传
+- 真实测色仪接入
+- 自动染料配方生成
+- ERP/MES 集成
+- 生产环境部署
+- 完整 PDF 生成
 
-## Implementation Notes
+## 实现备注
 
-Keep dependencies minimal:
+保持依赖最少：
 
-- Add Prisma and Prisma Client only if not present
-- Use local SQLite at `prisma/dev.db`
-- Use simple seed data committed as code or JSON
-- Prefer server actions or route handlers only where they reduce complexity
-- Keep the UI in a small number of files until real duplication appears
+- 只在项目还没有 Prisma 时新增 Prisma 和 Prisma Client
+- SQLite 使用本地 `prisma/dev.db`
+- 种子数据可以写在代码或 JSON 中
+- 只有在能减少复杂度时才使用 server actions 或 route handlers
+- UI 先控制在少量文件里，等真实重复出现后再抽组件
 
-## Approval
+## 已确认方向
 
-Approved direction from the user:
+用户已确认：
 
-- Next.js is the main demo entry
-- SQLite with Prisma is acceptable
-- Keep the MVP as simple as possible
+- Next.js 是主 Demo 入口
+- SQLite + Prisma 可以使用
+- MVP 越简单越好

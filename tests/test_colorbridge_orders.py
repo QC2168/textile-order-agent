@@ -3,6 +3,7 @@ import unittest
 from colorbridge_orders import (
     close_order,
     confirm_recipe,
+    confirm_visual_recipe,
     create_task_order,
     create_after_sales_ticket,
     dispatch_to_workshop,
@@ -12,6 +13,7 @@ from colorbridge_orders import (
     list_task_orders,
     record_production_result,
     reset_task_orders,
+    run_order_demo_flow,
     save_recipe_version,
     search_historical_batches,
     submit_recipe_for_review,
@@ -97,6 +99,25 @@ class ColorBridgeOrdersTest(unittest.TestCase):
 
         self.assertEqual(archived["workflow_status"], "已归档")
         self.assertEqual(archived["after_sales_tickets"][0]["status"], "已关闭")
+
+    def test_confirm_visual_recipe_saves_adjustments_and_confirms(self):
+        order, _ = run_order_demo_flow("客户要高级一点的雾霾蓝，别太紫，做在棉针织上")
+
+        confirmed = confirm_visual_recipe(
+            order["order_id"],
+            {
+                "source": "visual_panel",
+                "params": {"temperature": 58, "pH": 10.4, "heating_rate": 1.2, "hold_time": 45},
+                "predicted_lab": {"l": 63.8, "a": -2.2, "b": -12.8},
+                "risk": "低",
+            },
+        )
+
+        self.assertEqual(confirmed["workflow_status"], "方案已确认")
+        self.assertEqual(confirmed["recipe_cards"][-1]["version"], "V2")
+        self.assertEqual(confirmed["recipe_cards"][-1]["status"], "已确认")
+        self.assertTrue(confirmed["recipe_cards"][-1]["visual_confirmed"])
+        self.assertEqual(confirmed["recipe_cards"][-1]["adjustments"]["source"], "visual_panel")
 
 
 if __name__ == "__main__":

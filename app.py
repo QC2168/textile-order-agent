@@ -11,6 +11,7 @@ from openai import AsyncOpenAI
 from colorbridge_orders import (
     close_order,
     confirm_recipe,
+    confirm_visual_recipe,
     create_after_sales_ticket,
     dispatch_to_workshop,
     format_task_order,
@@ -21,6 +22,7 @@ from colorbridge_orders import (
     submit_recipe_for_review,
     update_production_status,
 )
+from colorbridge_visual import build_workflow_panel_props
 
 # ============ 初始化 ModelScope 客户端 ============
 # 使用 ModelScope 腾讯混元 Hy3 模型
@@ -193,9 +195,12 @@ async def on_message(message: cl.Message):
         async def build_colorbridge_context():
             active_order_id = cl.user_session.get("active_order_id")
             if wants_order_list(message.content):
+                cl.user_session.set("workflow_panel_props", None)
                 return format_order_list(list_task_orders())
             if wants_order_status(message.content) and active_order_id:
                 order = get_task_order(active_order_id)
+                if order:
+                    cl.user_session.set("workflow_panel_props", build_workflow_panel_props(order))
                 return format_task_order(order) if order else "当前会话没有可查询的任务订单。"
             if active_order_id and any(
                 keyword in message.content
@@ -221,10 +226,15 @@ async def on_message(message: cl.Message):
                     "结束订单",
                 )
             ):
-                return apply_order_actions(message.content, active_order_id)
+                context = apply_order_actions(message.content, active_order_id)
+                order = get_task_order(active_order_id)
+                if order:
+                    cl.user_session.set("workflow_panel_props", build_workflow_panel_props(order))
+                return context
 
             order, context = run_order_demo_flow(message.content)
             cl.user_session.set("active_order_id", order["order_id"])
+            cl.user_session.set("workflow_panel_props", build_workflow_panel_props(order))
             return context
 
         colorbridge_context = await build_colorbridge_context()
@@ -281,6 +291,16 @@ async def on_message(message: cl.Message):
     if not done_reasoning and answer_buffer:
         await msg.stream_token(answer_buffer)
 
+    panel_props = cl.user_session.get("workflow_panel_props")
+    if panel_props:
+        msg.elements = [
+            cl.CustomElement(
+                name="RecipeWorkflowPanel",
+                props=panel_props,
+                display="side",
+            )
+        ]
+
     await msg.send()
 
     # 更新对话历史
@@ -298,6 +318,43 @@ async def on_clear_history(action):
     cl.user_session.set("active_order_id", None)
     await cl.Message(content="🗑️ 对话历史已清除").send()
     await action.remove()
+
+
+@cl.action_callback("confirm_visual_recipe")
+async def on_confirm_visual_recipe(action):
+    payload = getattr(action, "payload", {}) or {}
+    order_id = payload.get("order_id") or cl.user_session.get("active_order_id")
+    if not order_id:
+        await cl.Message(content="当前没有可确认的任务订单。").send()
+        return
+
+    order = confirm_visual_recipe(
+        order_id,
+        {
+            "source": "visual_panel",
+            "variant_name": payload.get("variant_name", "当前调配方案"),
+            "params": payload.get("params", {}),
+            "predicted_lab": payload.get("predicted_lab"),
+            "risk": payload.get("risk"),
+        },
+    )
+    if not order:
+        await cl.Message(content=f"未找到任务订单：{order_id}").send()
+        return
+
+    panel_props = build_workflow_panel_props(order)
+    cl.user_session.set("active_order_id", order_id)
+    cl.user_session.set("workflow_panel_props", panel_props)
+    await cl.Message(
+        content=f"已确认当前可视化方案，并写回任务订单 {order_id}。下一步可以说：下发车间。",
+        elements=[
+            cl.CustomElement(
+                name="RecipeWorkflowPanel",
+                props=panel_props,
+                display="side",
+            )
+        ],
+    ).send()
 
 
 # ============ 聊天配置 ============

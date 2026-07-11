@@ -15,8 +15,11 @@
 | `colorbridge_data.py` | Demo 种子数据，字段对齐 `intent_request`、`historical_batch`、`batch_match`。 |
 | `colorbridge_tuning.py` | 纯业务逻辑：意图匹配、历史匹配、风险等级、调整建议、光源提示、格式化上下文。 |
 | `colorbridge_orders.py` | 轻量任务订单工具：创建订单、查询订单、列订单、查历史、生成调参建议、保存方案版本。 |
+| `colorbridge_visual.py` | 把订单对象转换成 Chainlit 可视化面板 props。 |
+| `public/elements/RecipeWorkflowPanel.jsx` | Chainlit 自定义侧边栏组件，显示配方工作流、配比、实时调参预览、多方案对比和追踪事件。 |
 | `tests/test_colorbridge_tuning.py` | stdlib `unittest` 测试，覆盖雾霾蓝成功批次、锦纶深紫风险建议、口径提示。 |
 | `tests/test_colorbridge_orders.py` | 订单闭环测试，覆盖创建订单、历史匹配、调参建议、方案卡和状态查询。 |
+| `tests/test_colorbridge_visual.py` | 可视化 props 测试，覆盖订单、配方、参数、色块和追踪事件。 |
 | `app.py` | Chainlit 入口。对纺织调色相关问题追加 ColorBridge 历史匹配上下文。 |
 | `docs/superpowers/plans/2026-07-12-colorbridge-tuning-agent-implementation.md` | 本次实现计划。 |
 
@@ -154,6 +157,36 @@
 7. 把格式化后的确定性上下文作为 system message 追加给模型。
 8. 模型基于上下文流式回答。
 
+## 可视化工作流面板
+
+当创建或更新任务订单后，`app.py` 会发送一个 Chainlit `CustomElement`：
+
+```python
+cl.CustomElement(
+    name="RecipeWorkflowPanel",
+    props=build_workflow_panel_props(order),
+    display="side",
+)
+```
+
+它会在 Chainlit 侧边栏打开一个配方工作流面板。
+
+面板当前包含：
+
+- 订单号、状态、风险。
+- 用户原始需求。
+- AI/规则提取的意图、面料、颜色、染料体系。
+- 历史 Top 匹配和选中批次。
+- 染料配方比例条。
+- 工艺参数：温度、pH、升温速率、保温。
+- 目标色和实时预测色块。
+- 本地滑块调参：温度、pH、升温速率、保温。
+- 多方案 V1/V2/V3 本地对比。
+- 点击“确认当前方案/确认此方案”后，通过 Chainlit `callAction` 调用后端 `confirm_visual_recipe`，把当前参数写入新的方案版本，并把任务订单推进到“方案已确认”。
+- 订单追踪事件时间线。
+
+当前滑块的色块预测是前端本地实时计算，适合演示“参数改变 -> 风险/色块变化”。确认动作已经回写到当前任务订单工具层；后续接真实数据库时，把 `colorbridge_orders.py` 的内存存储替换为表写入即可。
+
 ## 全链路演示提示词
 
 先创建订单：
@@ -205,6 +238,7 @@
 ```bash
 uv run python -m unittest tests.test_colorbridge_tuning -v
 uv run python -m unittest tests.test_colorbridge_orders -v
+uv run python -m unittest tests.test_colorbridge_visual -v
 ```
 
 当前测试覆盖：
@@ -218,6 +252,7 @@ uv run python -m unittest tests.test_colorbridge_orders -v
 - 调参建议生成后状态为“调参建议已生成”。
 - 保存方案后生成 V1 草稿方案卡。
 - 审核、确认、下发、生产、售后、归档状态按顺序更新。
+- 可视化 props 包含订单、历史批次、配方、工艺参数、色块预览和追踪事件。
 
 ## 后续替换数据库的方式
 

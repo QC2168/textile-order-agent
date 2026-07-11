@@ -205,6 +205,29 @@ def save_recipe_version(order_id: str, adjustments: dict | None = None) -> dict:
     return _copy(recipe)
 
 
+def confirm_visual_recipe(order_id: str, adjustments: dict) -> dict:
+    order = _ORDERS.get(order_id)
+    if not order:
+        return {}
+    recipe = save_recipe_version(order_id, adjustments)
+    latest = _latest_recipe(order)
+    if latest:
+        latest["status"] = "已确认"
+        latest["reviewer"] = "调色师"
+        latest["reviewed_at"] = "2026-07-12 10:30"
+        latest["visual_confirmed"] = True
+    order["workflow_status"] = "方案已确认"
+    order["trace_events"].append(
+        _trace(
+            "visual_recipe_confirmed",
+            "确认可视化方案",
+            f"已确认 {recipe.get('version', '当前')} 可视化调配方案，等待下发车间。",
+            "调色师",
+        )
+    )
+    return _copy(order)
+
+
 def get_recipe_card(order_id: str) -> dict:
     order = _ORDERS.get(order_id)
     if not order or not order["recipe_cards"]:

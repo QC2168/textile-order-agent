@@ -115,24 +115,35 @@ sequenceDiagram
     State->>DB: 读取目标 Lab、阈值、内置打样版本
     DB-->>State: 返回 SampleAttempt 数据
 
-    State->>Delta: 计算或读取 Delta E
-    Delta-->>State: 返回 V1 / V2 对比结果
-
-    alt 第一次打样
-        State-->>UI: 展示 V1<br/>Delta E 超阈值，不合格，说明偏差方向
-    end
-
-    alt 第二次打样
-        State-->>UI: 展示 V2<br/>Delta E 达标
-    end
-
-    State->>DB: 保存 SampleAttempt 和 TraceEvent
+    State->>Delta: 计算或读取 V1 Delta E
+    Delta-->>State: 返回 V1 未达标
+    State-->>UI: 展示 V1<br/>Delta E 超阈值，不合格，说明偏差方向
+    State->>DB: 保存 V1 SampleAttempt 和 TraceEvent
     DB-->>State: 保存成功
+
+    alt V1 未达标
+        State-->>UI: 停留在步骤 5<br/>提示需要继续打样，不能进入确认与追溯
+        O->>UI: 点击「继续打样」
+        UI->>State: 请求下一次内置打样结果
+        State->>Delta: 计算或读取 V2 Delta E
+        Delta-->>State: 返回 V2 达标
+        State-->>UI: 展示 V2<br/>Delta E 达标
+        State->>DB: 保存 V2 SampleAttempt 和 TraceEvent
+        DB-->>State: 保存成功
+    else 当前样版已达标
+        State-->>UI: 允许进入下一步
+    end
 
     O->>UI: 点击「采用达标样版」
-    UI->>State: 锁定达标样版 V2
-    State->>DB: 更新订单最终样版
-    DB-->>State: 保存成功
+    UI->>State: 校验当前样版是否达标
+
+    alt 当前样版达标
+        State->>DB: 锁定达标样版 V2
+        DB-->>State: 保存成功
+        State-->>UI: 允许进入步骤 6
+    else 当前样版未达标
+        State-->>UI: 拒绝进入下一步<br/>继续停留在步骤 5
+    end
 
     O->>UI: 点击「生成确认卡」
     UI->>State: 进入步骤 6

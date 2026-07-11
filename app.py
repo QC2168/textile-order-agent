@@ -1,6 +1,6 @@
 """
 Chainlit Demo - ColorBridge 调色智能体
-接入大模型，读写 web/prisma/dev.db（与 Next.js 前端共用数据库）
+通过 DATABASE_URL 连接远程 PostgreSQL，与 Next.js 前端共用同一数据库
 """
 import chainlit as cl
 import json

@@ -7,6 +7,10 @@ import json
 import os
 import re
 from typing import Any
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import pandas as pd
 from openai import AsyncOpenAI
 from database import (
@@ -21,8 +25,6 @@ from database import (
     get_trace_events,
     get_historical_cases,
 )
-
-# Chainlit 启动时自动加载 .env，不需要手动 load_dotenv
 
 # ============ 模型配置（从 .env 读取） ============
 client = AsyncOpenAI(

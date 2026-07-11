@@ -91,3 +91,6 @@ temp/
 # Logs
 *.log
 
+# Audio cache (语音录制临时文件)
+.audio_cache/
+

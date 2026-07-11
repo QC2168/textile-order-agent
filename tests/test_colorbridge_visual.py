@@ -6,7 +6,7 @@ from colorbridge_visual import build_workflow_panel_props
 
 class ColorBridgeVisualTest(unittest.TestCase):
     def setUp(self):
-        reset_task_orders()
+        reset_task_orders(full=True)
 
     def test_workflow_panel_props_include_order_recipe_and_tracking(self):
         order, _ = run_order_demo_flow("客户要高级一点的雾霾蓝，别太紫，做在棉针织上")

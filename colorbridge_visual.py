@@ -81,12 +81,13 @@ def build_workflow_panel_props(order: dict) -> dict:
         },
         "formula": formula_with_share(recipe.get("dye_formula", [])),
         "process_params": process,
-        "tuning_defaults": {
-            "temperature": process.get("temperature", 60),
-            "pH": process.get("pH", 10.6),
-            "heating_rate": process.get("heating_rate", 1.5),
-            "hold_time": process.get("hold_time", 45),
-        },
+        # 把历史批次的全部工艺参数传给前端，前端根据染料体系决定显示哪些滑块
+        # 通用：temperature, pH, heating_rate, hold_time, liquor_ratio
+        # 活性染料：+ salt, alkali
+        # 分散染料：+ dispersant, leveling_agent
+        # 酸性染料：+ leveling_agent, acetic_acid
+        # 阳离子染料：+ retarder, sodium_acetate
+        "tuning_defaults": {**process} if process else {},
         "color_preview": {
             "target": target,
             "target_css": lab_to_css(target),
@@ -95,4 +96,21 @@ def build_workflow_panel_props(order: dict) -> dict:
         },
         "trace_events": order.get("trace_events", []),
         "after_sales_tickets": order.get("after_sales_tickets", []),
+    }
+
+
+def build_empty_panel_props() -> dict:
+    """空状态 props，用于覆盖侧边栏残留的旧面板 DOM"""
+    return {
+        "order": {"order_id": "", "status": "", "risk": "待评估", "summary": "", "raw_text": ""},
+        "intent": {"intent_type": "", "fabric": "", "color_name": "", "dye_type": "活性染料", "target_lab": None, "confidence": 0},
+        "selected_batch": {},
+        "matches": [],
+        "recipe": {},
+        "formula": [],
+        "process_params": {},
+        "tuning_defaults": {},
+        "color_preview": {"target": None, "target_css": "#d7dde2", "predicted": None, "predicted_css": "#d7dde2"},
+        "trace_events": [],
+        "after_sales_tickets": [],
     }

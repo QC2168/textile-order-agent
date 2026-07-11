@@ -58,7 +58,7 @@
     },
     "chat": {
         "input": {
-            "placeholder": "\u5728\u6b64\u8f93\u5165\u60a8\u7684\u6d88\u606f...",
+            "placeholder": "描述你的调色需求...",
             "actions": {
                 "send": "\u53d1\u9001\u6d88\u606f",
                 "stop": "\u505c\u6b62\u4efb\u52a1",
@@ -132,7 +132,7 @@
             "title": "\u8bbe\u7f6e\u9762\u677f",
             "customize": "\u5728\u6b64\u81ea\u5b9a\u4e49\u60a8\u7684\u804a\u5929\u8bbe\u7f6e"
         },
-        "watermark": "\u5927\u8bed\u8a00\u6a21\u578b\u53ef\u80fd\u4f1a\u72af\u9519\u3002\u8bf7\u6838\u5b9e\u91cd\u8981\u4fe1\u606f\u3002"
+        "watermark": "AI 建议仅供参考，最终方案请小样验证"
     },
     "threadHistory": {
         "sidebar": {

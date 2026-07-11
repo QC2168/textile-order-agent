@@ -23,7 +23,7 @@ from colorbridge_orders import (
 
 class ColorBridgeOrdersTest(unittest.TestCase):
     def setUp(self):
-        reset_task_orders()
+        reset_task_orders(full=True)
 
     def test_create_search_advise_and_save_recipe(self):
         order = create_task_order("客户要高级一点的雾霾蓝，别太紫，做在棉针织上")

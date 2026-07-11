@@ -1,14 +1,43 @@
-# Welcome to Chainlit! 🚀🤖
+# ColorBridge 色译通
 
-Hi there, Developer! 👋 We're excited to have you on board. Chainlit is a powerful tool designed to help you prototype, debug and share applications built on top of LLMs.
+**AI 辅助纺织印染调色协同系统**
 
-## Useful Links 🔗
+ColorBridge 帮助调色师基于历史生产数据，进行智能配色、工艺参数优化和色差风险评估。系统不会声称能自动给出绝对正确的生产配方——它提供的是基于历史成功批次、相似差异分析和工艺经验的调整方向，最终方案必须由调色师小样验证和人工确认。
 
-- **Documentation:** Get started with our comprehensive [Chainlit Documentation](https://docs.chainlit.io) 📚
-- **Discord Community:** Join our friendly [Chainlit Discord](https://discord.gg/k73SQ3FyUh) to ask questions, share your projects, and connect with other developers! 💬
+---
 
-We can't wait to see what you create with Chainlit! Happy coding! 💻😊
+## 你可以这样开始
 
-## Welcome screen
+**描述一个调色需求：**
+> "帮我做雾霾蓝棉针织布的配色方案"
+> "黑色涤纶面料怎么做，有没有历史参考？"
+> "锦纶深紫色偏深风险怎么降低？"
+> "宝蓝腈纶怎么减少色花？"
 
-To modify the welcome screen, edit the `chainlit.md` file at the root of your project. If you do not want a welcome screen, just leave this file empty.
+**查询订单和流程：**
+> "当前有哪些任务订单？"
+> "订单状态到哪了？"
+> "下发车间" / "确认方案"
+
+**探索光源和色差：**
+> "D65 和 TL84 光源下面料颜色有什么区别？"
+> "这个配方的色差风险有多大？"
+
+---
+
+## 支持能力
+
+**染料体系：** 活性染料 · 分散染料 · 酸性染料 · 阳离子染料
+
+**面料类型：** 棉、涤纶、锦纶、腈纶及其混纺
+
+**核心功能：**
+- 历史批次智能匹配与相似度评估
+- 工艺参数量化调配（温度、pH、升温速率、保温时间及染料体系专用参数）
+- 多方案对比与风险评分
+- 多光源同色异谱模拟
+- 订单全生命周期跟踪
+
+---
+
+*参数影响基于企业历史生产数据量化，不使用脱离实际的固定 ΔE 承诺。*

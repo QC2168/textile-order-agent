@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import re
 from copy import deepcopy
+from datetime import datetime
 
 from colorbridge_tuning import (
     build_tuning_summary,
@@ -9,27 +11,55 @@ from colorbridge_tuning import (
     format_tuning_summary,
 )
 
-DEMO_ORDER_DATE = "20260712"
-
 _ORDERS: dict[str, dict] = {}
 _ORDER_COUNTER = 0
+_ORDER_DATE = datetime.now().strftime("%Y%m%d")
 
 
-def reset_task_orders() -> None:
+def reset_task_orders(full: bool = False) -> None:
+    """清空内存中的订单。full=True 时同时重置计数器（用于测试隔离）"""
     global _ORDER_COUNTER
     _ORDERS.clear()
-    _ORDER_COUNTER = 0
+    if full:
+        _ORDER_COUNTER = 0
 
 
 def _next_order_id() -> str:
     global _ORDER_COUNTER
     _ORDER_COUNTER += 1
-    return f"CB-{DEMO_ORDER_DATE}-{_ORDER_COUNTER:03d}"
+    # 检查内存中是否已有此 ID
+    new_id = f"CB-{_ORDER_DATE}-{_ORDER_COUNTER:03d}"
+    while new_id in _ORDERS:
+        _ORDER_COUNTER += 1
+        new_id = f"CB-{_ORDER_DATE}-{_ORDER_COUNTER:03d}"
+    return new_id
+
+
+def init_counter_from_db() -> None:
+    """从数据库读取最大订单号，避免重启后 ID 重复"""
+    global _ORDER_COUNTER, _ORDER_DATE
+    try:
+        import colorbridge_db
+        orders = colorbridge_db.list_orders(limit=100)
+        pattern = re.compile(rf"CB-{_ORDER_DATE}-(\d+)")
+        max_num = 0
+        for o in orders:
+            m = pattern.match(o.get("id", "") or o.get("order_no", ""))
+            if m:
+                max_num = max(max_num, int(m.group(1)))
+        if max_num >= _ORDER_COUNTER:
+            _ORDER_COUNTER = max_num
+    except Exception:
+        pass  # 数据库未初始化时忽略
+
+
+# 模块加载时自动从数据库恢复计数器
+init_counter_from_db()
 
 
 def _trace(event_type: str, title: str, detail: str, operator: str = "system") -> dict:
     return {
-        "event_time": "2026-07-12 10:30",
+        "event_time": _now(),
         "event_type": event_type,
         "title": title,
         "detail": detail,
@@ -39,6 +69,11 @@ def _trace(event_type: str, title: str, detail: str, operator: str = "system") -
 
 def _copy(value):
     return deepcopy(value)
+
+
+def _now() -> str:
+    """返回当前时间，格式：YYYY-MM-DD HH:MM:SS"""
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def get_task_order(order_id: str) -> dict | None:
@@ -83,7 +118,7 @@ def create_task_order(user_text: str) -> dict:
                 "system",
             )
         ],
-        "updated_at": "2026-07-12 10:30",
+        "updated_at": _now(),
     }
     _ORDERS[order_id] = order
     return _copy(order)
@@ -119,6 +154,7 @@ def search_historical_batches(order_id: str) -> list[dict]:
 
     order["matches"] = matches
     order["workflow_status"] = "历史已匹配"
+    order["updated_at"] = _now()
     order["trace_events"].append(
         _trace(
             "history_matched",
@@ -149,6 +185,7 @@ def generate_tuning_advice(order_id: str) -> dict:
     order["tuning_advice"] = advice
     order["predicted_risk"] = advice["risk_level"]
     order["workflow_status"] = "调参建议已生成"
+    order["updated_at"] = _now()
     order["trace_events"].append(
         _trace(
             "tuning_advice_generated",
@@ -190,11 +227,12 @@ def save_recipe_version(order_id: str, adjustments: dict | None = None) -> dict:
             "确认 D65/TL84 下小样看色",
         ],
         "status": "草稿",
-        "created_at": "2026-07-12 10:30",
+        "created_at": _now(),
     }
     order["recipe_cards"].append(recipe)
     order["recipe_card_id"] = recipe_id
     order["workflow_status"] = "方案草稿已保存"
+    order["updated_at"] = _now()
     order["trace_events"].append(
         _trace(
             "recipe_saved",
@@ -214,9 +252,10 @@ def confirm_visual_recipe(order_id: str, adjustments: dict) -> dict:
     if latest:
         latest["status"] = "已确认"
         latest["reviewer"] = "调色师"
-        latest["reviewed_at"] = "2026-07-12 10:30"
+        latest["reviewed_at"] = _now()
         latest["visual_confirmed"] = True
     order["workflow_status"] = "方案已确认"
+    order["updated_at"] = _now()
     order["trace_events"].append(
         _trace(
             "visual_recipe_confirmed",
@@ -241,6 +280,7 @@ def _latest_recipe(order: dict) -> dict | None:
 
 def _set_status(order: dict, status: str, event_type: str, title: str, detail: str) -> dict:
     order["workflow_status"] = status
+    order["updated_at"] = _now()
     order["trace_events"].append(_trace(event_type, title, detail))
     return _copy(order)
 
@@ -263,7 +303,7 @@ def confirm_recipe(order_id: str, reviewer: str = "工艺员") -> dict:
     if recipe:
         recipe["status"] = "已确认"
         recipe["reviewer"] = reviewer
-        recipe["reviewed_at"] = "2026-07-12 10:30"
+        recipe["reviewed_at"] = _now()
     return _set_status(order, "方案已确认", "recipe_confirmed", "确认方案", f"{reviewer} 已确认当前方案。")
 
 
@@ -312,10 +352,11 @@ def create_after_sales_ticket(order_id: str, issue_type: str, description: str) 
         "issue_type": issue_type,
         "description": description,
         "status": "处理中",
-        "created_at": "2026-07-12 10:30",
+        "created_at": _now(),
     }
     order["after_sales_tickets"].append(ticket)
     order["workflow_status"] = "售后处理中"
+    order["updated_at"] = _now()
     order["trace_events"].append(
         _trace("after_sales_created", "创建售后记录", f"{issue_type}：{description}")
     )

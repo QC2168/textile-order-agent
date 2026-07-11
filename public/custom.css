@@ -1,0 +1,188 @@
+/* ================================================================
+   ColorBridge 色译通 — Chainlit 输入框自定义样式
+   参考风格：柔和圆角、微妙阴影、品牌色调、无突兀红色
+   ================================================================ */
+
+/* ── 输入框容器 ─────────────────────────────────── */
+
+#message-composer {
+    background: #f8fafc !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 20px !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    padding: 10px 16px !important;
+    min-height: auto !important;
+}
+
+#message-composer:focus-within {
+    border-color: #0f766e !important;
+    box-shadow: 0 2px 16px rgba(15, 118, 110, 0.1),
+                0 0 0 3px rgba(15, 118, 110, 0.06) !important;
+    background: #ffffff !important;
+}
+
+/* ── 输入文本区域 ───────────────────────────────── */
+
+#chat-input {
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+    color: #1e293b !important;
+    font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', sans-serif !important;
+    padding: 6px 0 !important;
+    letter-spacing: 0.01em !important;
+}
+
+#chat-input::placeholder {
+    color: #94a3b8 !important;
+    font-weight: 400 !important;
+    font-size: 15px !important;
+}
+
+/* ── 发送按钮 — 去掉红色，改为品牌色 ───────────── */
+
+#chat-submit {
+    background: linear-gradient(135deg, #0f766e, #0891b2) !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: none !important;
+}
+
+#chat-submit:hover {
+    background: linear-gradient(135deg, #0d9488, #06b6d4) !important;
+    box-shadow: 0 4px 14px rgba(15, 118, 110, 0.35) !important;
+    transform: scale(1.08) !important;
+}
+
+#chat-submit:active {
+    transform: scale(0.95) !important;
+}
+
+#chat-submit svg {
+    width: 16px !important;
+    height: 16px !important;
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+/* ── 停止按钮（生成中）─────────────────────────── */
+
+#stop-button {
+    background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25) !important;
+    transition: all 0.2s ease !important;
+    border: none !important;
+}
+
+#stop-button:hover {
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35) !important;
+    transform: scale(1.08) !important;
+}
+
+/* ── 水印/提示文字 — 更低调 ────────────────────── */
+
+.watermark {
+    font-size: 11px !important;
+    color: #cbd5e1 !important;
+    opacity: 0.7 !important;
+    letter-spacing: 0.02em !important;
+    margin-top: 6px !important;
+}
+
+.watermark a {
+    color: #94a3b8 !important;
+    text-decoration: none !important;
+}
+
+/* ── 上传/附件按钮 ─────────────────────────────── */
+
+#upload-button {
+    color: #94a3b8 !important;
+    transition: color 0.2s ease !important;
+    border-radius: 8px !important;
+    padding: 4px !important;
+}
+
+#upload-button:hover {
+    color: #0f766e !important;
+    background: #f0fdfa !important;
+}
+
+/* ── 输入区底部工具栏 ──────────────────────────── */
+
+#message-composer button:not(#chat-submit):not(#stop-button):not(#upload-button) {
+    border-radius: 8px !important;
+    transition: all 0.15s ease !important;
+}
+
+#message-composer button:not(#chat-submit):not(#stop-button):not(#upload-button):hover {
+    background: #f0fdfa !important;
+    color: #0f766e !important;
+}
+
+/* ── 文件附件预览区 ────────────────────────────── */
+
+#message-composer [data-file] {
+    border-radius: 12px !important;
+    border-color: #e2e8f0 !important;
+}
+
+/* ── 聊天页面整体背景 ──────────────────────────── */
+
+main[class*="flex-1"] {
+    background: #fafbfc !important;
+}
+
+/* ── 欢迎消息区域优化 ──────────────────────────── */
+
+/* 消息气泡 */
+[class*="user"] [class*="message"] {
+    border-radius: 16px !important;
+}
+
+/* ── 滚动条美化 ────────────────────────────────── */
+
+::-webkit-scrollbar {
+    width: 6px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #e2e8f0 !important;
+    border-radius: 3px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1 !important;
+}
+
+/* ── 新建对话按钮 ──────────────────────────────── */
+
+button[class*="new-chat"],
+button[aria-label*="新建"] {
+    border-radius: 12px !important;
+    transition: all 0.2s ease !important;
+}
+
+/* ── 响应式微调 ────────────────────────────────── */
+
+@media (max-width: 768px) {
+    #message-composer {
+        border-radius: 16px !important;
+        padding: 8px 12px !important;
+    }
+
+    #chat-submit {
+        width: 32px !important;
+        height: 32px !important;
+    }
+}

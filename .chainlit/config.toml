@@ -1,48 +1,50 @@
 [project]
-# 是否开启遥测（建议关闭）
-enable_telemetry = false
-
-# 应用名称
-title = "Chainlit 智能体 Demo"
-
-# 是否允许用户上传文件
+# 允许的来源
 allow_origins = ["*"]
 
+# 会话超时（秒）
+session_timeout = 3600
+
 [features]
-# 启用文件上传
-multi_modal = true
-
-# 启用语音输入
-speech_to_text = false
-
-# 是否显示读取文件内容的按钮
-show_readme_as_default = true
-
 # 是否允许用户编辑消息
-editable = true
+edit_message = true
 
-[features.auto_tag]
-# 自动标签功能
-message_regex = ""
-link_regex = ""
+# 自动标签
+auto_tag_thread = true
+
+# 用户消息 Markdown 渲染
+user_message_markdown = true
+
+# 允许分享对话
+allow_thread_sharing = false
+
+# ── 文件上传（附件/回形针按钮）──
+[features.spontaneous_file_upload]
+enabled = true
+accept = ["*/*"]
+max_files = 20
+max_size_mb = 500
+
+# ── 语音输入（麦克风按钮）──
+[features.audio]
+enabled = true
+sample_rate = 24000
 
 [UI]
-# UI 名称（Chainlit 2.0+ 必需）
-name = "Chainlit Demo"
+# 应用名称
+name = "ColorBridge 色译通"
 
 # 主题: light 或 dark
-theme = "light"
+default_theme = "light"
 
-# 是否显示 GitHub 链接
-show_github = false
+# 自定义 CSS 样式
+custom_css = "/public/custom.css"
 
-# 面包屑导航
-breadcrumb = "智能体 Demo"
+# Chain of Thought 显示模式
+cot = "full"
 
-# 默认字体大小
-default_font_size = 14
+# 新建对话时确认提示
+confirm_new_chat = true
 
 [meta]
-# 生产商信息
-producer = "Chainlit"
 generated_by = "2.0.0"

@@ -1,0 +1,106 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../app/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ColorOrder {
+  id               String          @id @default(cuid())
+  taskNo           String?         @unique
+  customerName     String          @default("默认客户")
+  customerInput    String
+  requestedColor   String?
+  colorIntent      String?
+  productionMaterial String?
+  baseCloth        String?
+  dyeType          String?
+  targetLab        Json?
+  finalRenderLab   Json?
+  status           String
+  confirmedFields  Json?
+  selectedCaseId   String?
+  selectedSampleId String?
+  finalSchemeId    String?
+  finalConfirmedAt DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  analysis         AnalysisResult?
+  historicalCases  HistoricalCase[]
+  sampleAttempts   SampleAttempt[]
+  traceEvents      TraceEvent[]
+}
+
+model AnalysisResult {
+  id            String     @id @default(cuid())
+  orderId       String     @unique
+  order         ColorOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  extractedJson Json
+  missingFields Json
+  confidence    Float
+  source        String
+  createdAt     DateTime   @default(now())
+}
+
+model HistoricalCase {
+  id               String   @id
+  orderId          String?
+  order            ColorOrder? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  name             String
+  sourceType       String   @default("seed")
+  fabric           String
+  dyeType          String?
+  baseCloth        String
+  lab              Json
+  similarityScore  Float?
+  similarityReason String
+  riskNote         String
+  selected         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+}
+
+model SampleAttempt {
+  id                String     @id
+  orderId           String
+  order             ColorOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  version           String
+  schemeName        String     @default("方案")
+  targetLab         Json?
+  lab               Json
+  aiLab             Json?
+  historicalCaseId  String?
+  productionMaterial String?
+  baseCloth         String?
+  dyeType           String?
+  illuminant        String?
+  illuminantLabel   String?
+  reviewIlluminant  String?
+  reviewIlluminantLabel String?
+  cctKelvin         Int?
+  illuminanceLux    Int?
+  viewingAngle      Int?
+  textureGloss      Int?
+  confirmationSnapshot Json?
+  deltaE            Float      @default(0)
+  passed            Boolean    @default(true)
+  recommendation    String     @default("")
+  deviation         String
+  selected          Boolean    @default(false)
+  confirmedAt       DateTime?
+  createdAt         DateTime   @default(now())
+}
+
+model TraceEvent {
+  id        String     @id @default(cuid())
+  orderId   String
+  order     ColorOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  eventType String     @default("note")
+  actor     String     @default("system")
+  label     String
+  detail    String
+  snapshot  Json?
+  createdAt DateTime   @default(now())
+}

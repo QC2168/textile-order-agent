@@ -1,14 +1,29 @@
-# Welcome to Chainlit! 🚀🤖
+# 纺织订单协同 Agent Demo
 
-Hi there, Developer! 👋 We're excited to have you on board. Chainlit is a powerful tool designed to help you prototype, debug and share applications built on top of LLMs.
+帮助跟单员追踪订单、识别风险、生成客户沟通话术。
+所有结论均基于内置 mock 订单数据，不会凭空编造。
 
-## Useful Links 🔗
+## 内置订单
 
-- **Documentation:** Get started with our comprehensive [Chainlit Documentation](https://docs.chainlit.io) 📚
-- **Discord Community:** Join our friendly [Chainlit Discord](https://discord.gg/k73SQ3FyUh) to ask questions, share your projects, and connect with other developers! 💬
+| 订单号 | 客户 | 阶段 | 风险 |
+| --- | --- | --- | --- |
+| BS-20260711-001 | 杭州云锦服饰 | 生产 | 低 |
+| BS-20260711-002 | 绍兴青禾贸易 | 客户确认 | 中 |
+| BS-20260711-003 | 宁波澜海家纺 | 质检 | 高 |
 
-We can't wait to see what you create with Chainlit! Happy coding! 💻😊
+## 试试这些查询
 
-## Welcome screen
+- **查进度**：`帮我看一下订单 BS-20260711-001 当前进度`
+- **风险扫描**：`扫描今天有哪些订单有延期风险`
+- **客户话术**：`订单 BS-20260711-002 客户一直没确认色样，帮我生成一段客户沟通话术`
+- **质检异常说明**：`订单 BS-20260711-003 质检异常，帮我说明原因并准备客户话术`
+- **列出全部**：`列出所有订单`
 
-To modify the welcome screen, edit the `chainlit.md` file at the root of your project. If you do not want a welcome screen, just leave this file empty.
+## 能力清单
+
+- 单订单摘要、时间线、风险检测
+- 多订单风险扫描（高/中/低）
+- 客户沟通话术草稿（基于订单背景、当前阻塞、下一步动作）
+- 订单 CRUD：创建、更新、删除
+- 订单列表（DataFrame 表格 + 侧边 TaskList）
+- 流式输出回答

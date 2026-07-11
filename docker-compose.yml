@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: colorbridge-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: colorbridge
+      POSTGRES_PASSWORD: colorbridge
+      POSTGRES_DB: colorbridge
+    ports:
+      - "54321:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

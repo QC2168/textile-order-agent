@@ -3,7 +3,7 @@
 enable_telemetry = false
 
 # 应用名称
-title = "Chainlit 智能体 Demo"
+title = "纺织订单协同 Agent"
 
 # 是否允许用户上传文件
 allow_origins = ["*"]
@@ -13,7 +13,7 @@ allow_origins = ["*"]
 multi_modal = true
 
 # 启用语音输入
-speech_to_text = false
+speech_to_text = true
 
 # 是否显示读取文件内容的按钮
 show_readme_as_default = true
@@ -28,19 +28,22 @@ link_regex = ""
 
 [UI]
 # UI 名称（Chainlit 2.0+ 必需）
-name = "Chainlit Demo"
+name = "纺织订单协同 Agent"
 
 # 主题: light 或 dark
-theme = "light"
+theme = "dark"
+
+# 默认主题（首次进入时使用）
+default_theme = "dark"
 
 # 是否显示 GitHub 链接
 show_github = false
 
 # 面包屑导航
-breadcrumb = "智能体 Demo"
+breadcrumb = "ColorBridge Demo"
 
 # 默认字体大小
-default_font_size = 14
+default_font_size = 15
 
 [meta]
 # 生产商信息

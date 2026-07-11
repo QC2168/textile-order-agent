@@ -5,8 +5,11 @@ description = "Chainlit AI Agent Demo"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "asyncpg>=0.31.0",
     "chainlit>=2.11.1",
     "openai>=1.0.0",
+    "pandas>=2.0.0",
+    "psycopg2-binary>=2.9",
 ]
 
 [dependency-groups]

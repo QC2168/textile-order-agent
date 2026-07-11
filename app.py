@@ -22,6 +22,8 @@ from database import (
     get_historical_cases,
 )
 
+# Chainlit 启动时自动加载 .env，不需要手动 load_dotenv
+
 # ============ 模型配置（从 .env 读取） ============
 client = AsyncOpenAI(
     base_url=os.getenv("MODEL_BASE_URL", "https://api.deepseek.com"),

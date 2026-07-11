@@ -960,6 +960,7 @@ export type SampleAttemptCreateOrConnectWithoutOrderInput = {
 
 export type SampleAttemptCreateManyOrderInputEnvelope = {
   data: Prisma.SampleAttemptCreateManyOrderInput | Prisma.SampleAttemptCreateManyOrderInput[]
+  skipDuplicates?: boolean
 }
 
 export type SampleAttemptUpsertWithWhereUniqueWithoutOrderInput = {
@@ -1981,6 +1982,7 @@ export type SampleAttemptCreateManyArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many SampleAttempts.
    */
   data: Prisma.SampleAttemptCreateManyInput | Prisma.SampleAttemptCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1999,6 +2001,7 @@ export type SampleAttemptCreateManyAndReturnArgs<ExtArgs extends runtime.Types.E
    * The data used to create many SampleAttempts.
    */
   data: Prisma.SampleAttemptCreateManyInput | Prisma.SampleAttemptCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

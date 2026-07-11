@@ -2032,6 +2032,7 @@ export type ColorOrderCreateManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * The data used to create many ColorOrders.
    */
   data: Prisma.ColorOrderCreateManyInput | Prisma.ColorOrderCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -2050,6 +2051,7 @@ export type ColorOrderCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exte
    * The data used to create many ColorOrders.
    */
   data: Prisma.ColorOrderCreateManyInput | Prisma.ColorOrderCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

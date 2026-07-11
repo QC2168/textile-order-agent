@@ -21,8 +21,20 @@ export async function resetDemoAction() {
   return resetDemoOrder();
 }
 
+export async function resetAndAnalyzeDemoAction() {
+  const created = await resetDemoOrder();
+  if (!created.orderId) return created;
+  return runAnalysis(created.orderId);
+}
+
 export async function createRequirementAction(customerInput: string) {
   return createCustomerRequirementOrder(customerInput);
+}
+
+export async function createAndAnalyzeRequirementAction(customerInput: string) {
+  const created = await createCustomerRequirementOrder(customerInput);
+  if (!created.orderId) return created;
+  return runAnalysis(created.orderId);
 }
 
 export async function runAnalysisAction(orderId: string | null) {

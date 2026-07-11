@@ -5,6 +5,7 @@ import {
   buildConfirmationDraft,
   confirmationDraftToRequirement,
   draftTargetLabToValue,
+  REAL_WORLD_REFERENCE_LIGHTING,
 } from "./confirmation";
 import type { StructuredAnalysis } from "./types";
 
@@ -145,6 +146,17 @@ describe("buildConfirmationDraft", () => {
         followUpSuggestion: "确认实体标准样",
       },
       referenceSource: "history-case",
+    });
+  });
+});
+
+describe("REAL_WORLD_REFERENCE_LIGHTING", () => {
+  it("keeps the comparison preview on a fixed daily viewing condition", () => {
+    expect(REAL_WORLD_REFERENCE_LIGHTING).toEqual({
+      cctKelvin: 6500,
+      illuminanceLux: 1000,
+      viewingAngle: 45,
+      textureGloss: 20,
     });
   });
 });

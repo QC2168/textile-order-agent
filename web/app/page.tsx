@@ -26,12 +26,12 @@ import {
 import {
   adoptSampleAction,
   compareSamplesAction,
+  createAndAnalyzeRequirementAction,
   confirmRequirementAction,
-  createRequirementAction,
   loadWorkbenchAction,
   matchHistoryAction,
+  resetAndAnalyzeDemoAction,
   resetDemoAction,
-  runAnalysisAction,
   selectCaseAction,
 } from "./actions";
 import {
@@ -46,6 +46,7 @@ import {
   buildConfirmationDraft,
   confirmationDraftToRequirement,
   draftTargetLabToValue,
+  REAL_WORLD_REFERENCE_LIGHTING,
   type ConfirmationDraft,
 } from "./colorbridge/confirmation";
 import {
@@ -58,6 +59,10 @@ import type {
   StepId,
   WorkbenchState,
 } from "./colorbridge/types";
+import {
+  displayLabForSchemeDecision,
+  sampleAttemptLimitState,
+} from "./colorbridge/workflow";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -92,21 +97,22 @@ import {
 
 const steps: { id: StepId; label: string }[] = [
   { id: "load", label: "客户需求集合" },
-  { id: "analysis", label: "AI 分析" },
   { id: "confirm", label: "人工确认" },
   { id: "history", label: "历史案例" },
   { id: "sampling", label: "方案选品" },
   { id: "trace", label: "确认追溯" },
 ];
 
+const PRODUCTION_MATERIALS = ["纯棉", "人棉", "莫代尔", "锦纶", "涤棉混纺", "羊毛", "晴纶"];
+const BASE_CLOTHS = ["本白布", "漂白布", "本白汗布", "本白罗纹", "客户原布"];
+
 function completedIndex(state: WorkbenchState | null) {
   if (!state?.orderId && state?.status !== "fallback") return -1;
-  if (state?.status === "fallback") return 5;
-  if (state?.selectedSampleId) return 5;
-  if (state?.sampleAttempts.length) return 4;
-  if (state?.selectedCaseId) return 3;
-  if (state?.confirmedFields) return 2;
-  if (state?.analysis) return 1;
+  if (state?.status === "fallback") return 4;
+  if (state?.selectedSampleId) return 4;
+  if (state?.sampleAttempts.length) return 3;
+  if (state?.selectedCaseId) return 2;
+  if (state?.confirmedFields) return 1;
   if (state?.customerInput) return 0;
   return -1;
 }
@@ -118,11 +124,6 @@ function formatLab(lab: LabValue) {
 function sourceLabel(source: string | null | undefined) {
   if (!source) return "待分析";
   return source === "cached-demo-json" ? "缓存 JSON" : source;
-}
-
-function nextSchemeVersion(version: string | null | undefined) {
-  const current = Number(version?.replace(/\D/g, "") || "0");
-  return `V${current + 1}`;
 }
 
 export default function Home() {
@@ -169,7 +170,6 @@ export default function Home() {
         renderBaseCloth,
       )
     : null;
-  const renderedTargetLab = livePreviewLab ?? targetLab;
   const riskLabel = lightingRiskLabel(form.illuminant, form.reviewIlluminant);
   const referenceSourceLabel = selectedCase
     ? "历史库样本"
@@ -180,7 +180,24 @@ export default function Home() {
   const selectedSample = state?.sampleAttempts.find(
     (item) => item.id === state.selectedSampleId,
   );
-  const latestSample = state?.sampleAttempts.at(-1);
+  const renderedTargetLab = displayLabForSchemeDecision({
+    selectedSample,
+    livePreviewLab,
+    targetLab,
+  });
+  const renderedTargetLighting = selectedSample
+    ? sampleLighting(selectedSample, form.lighting)
+    : form.lighting;
+  const decisionIlluminant = selectedSample?.illuminant ?? form.illuminant;
+  const decisionReviewIlluminant =
+    selectedSample?.reviewIlluminant ?? form.reviewIlluminant;
+  const decisionProductionMaterial =
+    selectedSample?.productionMaterial ?? form.productionMaterial;
+  const decisionDyeType = selectedSample?.dyeType ?? form.dyeType;
+  const decisionBaseCloth = selectedSample?.baseCloth ?? form.baseCloth;
+  const sampleLimit = sampleAttemptLimitState(
+    state?.sampleAttempts.length ?? 0,
+  );
   const traceReady = Boolean(
     state?.selectedSampleId || state?.status === "fallback",
   );
@@ -192,8 +209,8 @@ export default function Home() {
     if (!state) return "初始化";
     if (state.error) return "缓存兜底";
     if (state.analysisError) return "AI 分析失败";
-    if (done >= 5) return "已生成确认卡";
-    return `流程 ${Math.max(done + 1, 1)}/6`;
+    if (done >= 4) return "已生成确认卡";
+    return `流程 ${Math.max(done + 1, 1)}/5`;
   }, [actionFeedback, done, state]);
 
   function run(
@@ -209,11 +226,7 @@ export default function Home() {
         setState(next);
         setForm(buildConfirmationDraft(next));
         setCustomerDraft(next.customerInput);
-        setActiveStep(
-          pendingAction === "analysis" && next.analysisError
-            ? "analysis"
-            : nextStep,
-        );
+        setActiveStep(nextStep);
       } finally {
         const remainingMs = waitForMinimumDuration(startedAt, performance.now());
         if (remainingMs) await delay(remainingMs);
@@ -299,12 +312,14 @@ export default function Home() {
               <Button
                 className="bg-[#1f6f78] text-white hover:bg-[#195d64]"
                 disabled={isBusy}
-                onClick={() => run(resetDemoAction, "analysis", "load")}
+                onClick={() =>
+                  run(resetAndAnalyzeDemoAction, "confirm", "analysis")
+                }
               >
-                <ActionIcon active={activeAction === "load"}>
+                <ActionIcon active={activeAction === "analysis"}>
                   <Play />
                 </ActionIcon>
-                {activeAction === "load" ? "正在载入..." : "使用演示样例"}
+                {activeAction === "analysis" ? "正在分析..." : "使用演示样例"}
               </Button>
               <Button
                 variant="outline"
@@ -368,7 +383,7 @@ export default function Home() {
             <TabsContent value="load" className="mt-0 grid gap-4">
               <SectionTitle
                 title="1. 客户需求集合"
-                description="粘贴客户原话、群聊摘要或业务员整理的需求，创建后进入 AI 分析。"
+                description="粘贴客户原话、群聊摘要或业务员整理的需求，创建后自动提取可用参数并进入人工确认。"
               />
               <div className="grid gap-2">
                 <Label htmlFor="customer-requirement">客户需求集合</Label>
@@ -386,26 +401,30 @@ export default function Home() {
                   disabled={isBusy}
                   onClick={() =>
                     run(
-                      () => createRequirementAction(customerDraft),
+                      () => createAndAnalyzeRequirementAction(customerDraft),
+                      "confirm",
                       "analysis",
-                      "load",
                     )
                   }
                 >
-                  <ActionIcon active={activeAction === "load"}>
+                  <ActionIcon active={activeAction === "analysis"}>
                     <ClipboardCheck />
                   </ActionIcon>
-                  {activeAction === "load" ? "正在创建..." : "创建需求集合"}
+                  {activeAction === "analysis"
+                    ? "正在提取参数..."
+                    : "创建需求集合"}
                 </Button>
                 <Button
                   variant="outline"
                   disabled={isBusy}
-                  onClick={() => run(resetDemoAction, "analysis", "load")}
+                  onClick={() =>
+                    run(resetAndAnalyzeDemoAction, "confirm", "analysis")
+                  }
                 >
-                  <ActionIcon active={activeAction === "load"}>
+                  <ActionIcon active={activeAction === "analysis"}>
                     <Play />
                   </ActionIcon>
-                  {activeAction === "load" ? "正在载入..." : "使用演示样例"}
+                  {activeAction === "analysis" ? "正在分析..." : "使用演示样例"}
                 </Button>
                 <Button
                   variant="ghost"
@@ -418,66 +437,9 @@ export default function Home() {
               </div>
             </TabsContent>
 
-            <TabsContent value="analysis" className="mt-0 grid gap-4">
-              <SectionTitle
-                title="2. AI 结构化分析"
-                description="调用 DeepSeek V4 Flash 返回真实结构化 JSON；失败时显示错误，不静默写入缓存假数据。"
-              />
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  className="bg-[#1f6f78] text-white hover:bg-[#195d64]"
-                  disabled={isBusy}
-                  onClick={() =>
-                    run(
-                      () => runAnalysisAction(state?.orderId ?? null),
-                      "confirm",
-                      "analysis",
-                    )
-                  }
-                >
-                  <ActionIcon active={activeAction === "analysis"}>
-                    <ClipboardCheck />
-                  </ActionIcon>
-                  {activeAction === "analysis" ? "正在分析..." : "运行 AI 分析"}
-                </Button>
-                <Badge variant="outline">
-                  来源：{sourceLabel(state?.analysisSource)}
-                </Badge>
-              </div>
-              {state?.analysisError ? (
-                <Alert className="border-[#d7a64a] bg-[#fff7df] text-[#6f4d00]">
-                  <AlertTriangle />
-                  <AlertTitle>AI 分析未完成</AlertTitle>
-                  <AlertDescription>{state.analysisError}</AlertDescription>
-                </Alert>
-              ) : null}
-              {activeAction === "analysis" ? (
-                <AnalysisSkeleton />
-              ) : state?.analysis ? (
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Info label="颜色意图" value={state.analysis.colorIntent} />
-                  <Info label="目标颜色" value={state.analysis.targetColorName} />
-                  <Info label="面料" value={state.analysis.fabric} />
-                  <Info label="风险" value={state.analysis.avoidHueRisk} />
-                  <Info
-                    label="置信度"
-                    value={`${Math.round(state.analysis.confidence * 100)}%`}
-                  />
-                  <Info
-                    label="缺失字段"
-                    value={
-                      state.analysis.missingFields.length
-                        ? state.analysis.missingFields.join("、")
-                        : "无"
-                    }
-                  />
-                </div>
-              ) : null}
-            </TabsContent>
-
             <TabsContent value="confirm" className="mt-0 grid gap-4">
               <SectionTitle
-                title="3. 确认目标色与方案参数"
+                title="2. 确认目标色与方案参数"
                 description="区分 AI 初始提取、人工实时确认和历史库参考；多光源预览只表达趋势，不替代实测光谱。"
               />
               <div className="grid gap-4">
@@ -520,6 +482,22 @@ export default function Home() {
                         `来源：${referenceSourceLabel}`,
                         selectedCase?.riskNote ?? "待历史样验证",
                       ]}
+                    />
+                  </div>
+
+                  <div className="grid gap-3 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]">
+                    <MaterialAndDyeControls
+                      form={form}
+                      materialPlan={materialPlan}
+                      setForm={setForm}
+                      selectProductionMaterial={selectProductionMaterial}
+                    />
+                    <LabAdjustmentControls
+                      draftTargetLab={draftTargetLab}
+                      updateLab={updateLab}
+                      setLabValue={setLabValue}
+                      nudgeLab={nudgeLab}
+                      form={form}
                     />
                   </div>
 
@@ -623,7 +601,7 @@ export default function Home() {
 
             <TabsContent value="history" className="mt-0 grid gap-4">
               <SectionTitle
-                title="4. 相似历史案例"
+                title="3. 相似历史案例"
                 description="先命中确定性种子案例，再由操作员选择本次参考版本。"
               />
               <Button
@@ -704,13 +682,13 @@ export default function Home() {
 
             <TabsContent value="sampling" className="mt-0 grid gap-4">
               <SectionTitle
-                title="5. 方案选品"
+                title="4. 方案选品"
                 description="把每次人工确认后的实时渲染成品保存为 V1、V2、V3 方案，可继续调试，也可直接选为最终方案。"
               />
               <div className="flex flex-wrap items-center gap-2">
                 <Button
                   className="bg-[#1f6f78] text-white hover:bg-[#195d64]"
-                  disabled={isBusy || !state?.selectedCaseId}
+                  disabled={isBusy || !state?.selectedCaseId || sampleLimit.reached}
                   onClick={() =>
                     run(
                       () => compareSamplesAction(state?.orderId ?? null),
@@ -724,9 +702,7 @@ export default function Home() {
                   </ActionIcon>
                   {activeAction === "sampling"
                     ? "生成中..."
-                    : state?.sampleAttempts.length
-                      ? `保存 ${nextSchemeVersion(latestSample?.version)} 方案`
-                      : "保存 V1 方案"}
+                    : sampleLimit.buttonText}
                 </Button>
                 <Button
                   variant="outline"
@@ -739,6 +715,15 @@ export default function Home() {
                   <Badge variant="outline">请先选择参考案例</Badge>
                 ) : null}
               </div>
+              {sampleLimit.reached ? (
+                <Alert className="border-[#d7a64a] bg-[#fffdf5] text-[#533600]">
+                  <AlertTriangle />
+                  <AlertTitle>已达到 3 个候选方案上限</AlertTitle>
+                  <AlertDescription>
+                    请从 V1、V2、V3 中选择最终方案；如仍需调整，回到人工确认修改 Lab、看样环境、材质或基布后，再重新生成方案。
+                  </AlertDescription>
+                </Alert>
+              ) : null}
               <div className="grid gap-3 md:grid-cols-2">
                 {state?.sampleAttempts.map((item) => (
                   <Card
@@ -759,7 +744,8 @@ export default function Home() {
                       <div className="grid gap-2">
                         <SampleSwatch
                           label={`${item.version} 成品预览`}
-                          lab={item.targetLab}
+                          lab={item.lab}
+                          lighting={sampleLighting(item, form.lighting)}
                         />
                       </div>
                       {item.confirmationSummary ? (
@@ -807,7 +793,7 @@ export default function Home() {
 
             <TabsContent value="trace" className="mt-0 grid gap-4">
               <SectionTitle
-                title="6. 客户确认卡与追溯"
+                title="5. 客户确认卡与追溯"
                 description="汇总订单、AI 分析、人工确认、参考案例、最终方案和追溯事件。"
               />
               <div className="rounded-md border border-[#cfd8d1] bg-[#f8faf9] p-4">
@@ -870,7 +856,10 @@ export default function Home() {
                   <>
                     <div
                       className="h-24 rounded-md border border-[#b8aea2]"
-                      style={previewSurfaceStyle(renderedTargetLab, form.lighting)}
+                      style={previewSurfaceStyle(
+                        renderedTargetLab,
+                        renderedTargetLighting,
+                      )}
                     />
                     <p className="mt-2 text-sm">{formatLab(renderedTargetLab)}</p>
                   </>
@@ -888,18 +877,23 @@ export default function Home() {
               <CardContent className="grid gap-2 px-3 text-sm text-[#50616c]">
                 <p>AI 目标：{state?.analysis?.targetColorName ?? "待分析"}</p>
                 <p>面料：{state?.analysis?.fabric ?? "待分析"}</p>
-                <p>看样环境：{lightSceneLabel(form.illuminant)}</p>
-                <p>对照环境：{lightSceneLabel(form.reviewIlluminant || "")}</p>
-                <p>生产材质：{form.productionMaterial || "待确认"}</p>
-                <p>染料：{form.dyeType || materialPlan.dyeType}</p>
-                <p>基布：{form.baseCloth || "待确认"}</p>
+                <p>看样环境：{lightSceneLabel(decisionIlluminant)}</p>
+                <p>对照环境：{lightSceneLabel(decisionReviewIlluminant || "")}</p>
+                <p>生产材质：{decisionProductionMaterial || "待确认"}</p>
+                <p>染料：{decisionDyeType || materialPlan.dyeType}</p>
+                <p>基布：{decisionBaseCloth || "待确认"}</p>
                 <p>
                   容差：{form.deltaEThreshold || "待确认"} /{" "}
                   {form.toleranceMode}
                 </p>
                 <p>参考来源：{referenceSourceLabel}</p>
                 <p>参考案例：{selectedCase?.name ?? "待选择"}</p>
-                <p>最终方案：{selectedSample?.version ?? "待选择"}</p>
+                <p>
+                  最终方案：
+                  {selectedSample
+                    ? `${selectedSample.version} / ${formatLab(selectedSample.lab)}`
+                    : "待选择"}
+                </p>
                 <p>AI 来源：{sourceLabel(state?.analysisSource)}</p>
               </CardContent>
             </Card>
@@ -995,41 +989,6 @@ function ProcessPanel({
   );
 }
 
-function AnalysisSkeleton() {
-  return (
-    <div className="grid gap-3 md:grid-cols-2" aria-label="AI 分析加载中">
-      {["颜色意图", "目标颜色", "面料", "风险", "置信度", "缺失字段"].map(
-        (label) => (
-          <Card key={label} className="gap-2 rounded-md py-3 shadow-none">
-            <CardHeader className="px-3">
-              <CardDescription className="font-semibold text-[#44646d]">
-                {label}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-2 px-3">
-              <div className="h-3 w-11/12 animate-pulse rounded bg-[#dfe8e3]" />
-              <div className="h-3 w-7/12 animate-pulse rounded bg-[#e8eee9]" />
-            </CardContent>
-          </Card>
-        ),
-      )}
-    </div>
-  );
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <Card className="gap-2 rounded-md py-3 shadow-none">
-      <CardHeader className="px-3">
-        <CardDescription className="font-semibold text-[#44646d]">
-          {label}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="px-3 text-sm">{value}</CardContent>
-    </Card>
-  );
-}
-
 function ColorReviewCard({
   title,
   lab,
@@ -1089,15 +1048,17 @@ function ColorReviewCard({
 function SampleSwatch({
   label,
   lab,
+  lighting,
 }: {
   label: string;
   lab: LabValue | null | undefined;
+  lighting: ConfirmationDraft["lighting"];
 }) {
   return (
     <div className="grid gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfaf7] p-2">
       <div
         className="h-14 rounded border border-[#b8aea2]"
-        style={{ backgroundColor: lab ? labToCssColor(lab) : "#eef1ec" }}
+        style={lab ? previewSurfaceStyle(lab, lighting) : { backgroundColor: "#eef1ec" }}
       />
       <div>
         <p className="text-xs font-semibold text-[#33424f]">{label}</p>
@@ -1109,12 +1070,28 @@ function SampleSwatch({
   );
 }
 
+function sampleLighting(
+  sample: WorkbenchState["sampleAttempts"][number],
+  fallback: ConfirmationDraft["lighting"],
+) {
+  return {
+    cctKelvin: sample.cctKelvin ?? fallback.cctKelvin,
+    illuminanceLux: sample.illuminanceLux ?? fallback.illuminanceLux,
+    viewingAngle: sample.viewingAngle ?? fallback.viewingAngle,
+    textureGloss: sample.textureGloss ?? fallback.textureGloss,
+  };
+}
+
 function LivePreviewSurface({
+  title,
+  subtitle,
   lab,
   baseLab,
   form,
   large,
 }: {
+  title?: string;
+  subtitle?: string;
   lab: LabValue | null | undefined;
   baseLab: LabValue | null | undefined;
   form: ConfirmationDraft;
@@ -1134,7 +1111,12 @@ function LivePreviewSurface({
         style={lab ? previewSurfaceStyle(lab, form.lighting) : undefined}
       >
         <div className="absolute left-3 top-3 rounded-md border border-white/55 bg-white/82 px-3 py-2 text-sm text-[#18222c] shadow-sm">
-          <p className="font-semibold">{lightSceneLabel(form.illuminant)} 实时预览</p>
+          <p className="font-semibold">
+            {title ?? `${lightSceneLabel(form.illuminant)} 实时预览`}
+          </p>
+          {subtitle ? (
+            <p className="text-[11px] text-[#50616c]">{subtitle}</p>
+          ) : null}
           <p className="text-xs text-[#50616c]">
             {lab ? formatLab(lab) : "待补全 Lab"}
           </p>
@@ -1192,12 +1174,12 @@ function MaterialImpactPanel({
   form: ConfirmationDraft;
   materialPlan: ReturnType<typeof dyePlanForMaterial>;
 }) {
-  const glossImpact = form.lighting.textureGloss;
+  const glossImpact = Math.round(form.lighting.textureGloss * 0.45);
   const materialImpact = materialVisualScore(form.productionMaterial);
   const baseImpact = baseClothVisualScore(form.baseCloth);
-  const angleImpact = Math.round(Math.abs(form.lighting.viewingAngle - 45) * 1.4);
+  const angleImpact = Math.round(Math.abs(form.lighting.viewingAngle - 45) * 0.35);
   const lightImpact = Math.round(
-    Math.abs(form.lighting.illuminanceLux - 1000) / 18,
+    Math.abs(form.lighting.illuminanceLux - 1000) / 80,
   );
 
   return (
@@ -1219,21 +1201,142 @@ function MaterialImpactPanel({
 }
 
 function materialVisualScore(material: string) {
-  if (/涤棉|涤.*棉|棉.*涤/.test(material)) return 58;
-  if (/(纯棉|人棉|莫代尔|棉)/.test(material)) return 48;
-  if (/锦纶/.test(material)) return 42;
-  if (/羊毛/.test(material)) return 64;
-  if (/(晴纶|腈纶)/.test(material)) return 55;
-  return 30;
+  if (/涤棉|涤.*棉|棉.*涤/.test(material)) return 24;
+  if (/(纯棉|人棉|莫代尔|棉)/.test(material)) return 18;
+  if (/锦纶/.test(material)) return 20;
+  if (/羊毛/.test(material)) return 26;
+  if (/(晴纶|腈纶)/.test(material)) return 22;
+  return 12;
 }
 
 function baseClothVisualScore(baseCloth: string) {
-  if (baseCloth === "漂白布") return 24;
-  if (baseCloth === "本白布") return 42;
-  if (baseCloth === "本白汗布") return 48;
-  if (baseCloth === "本白罗纹") return 54;
-  if (baseCloth === "客户原布") return 68;
-  return 35;
+  if (baseCloth === "漂白布") return 12;
+  if (baseCloth === "本白布") return 16;
+  if (baseCloth === "本白汗布") return 18;
+  if (baseCloth === "本白罗纹") return 20;
+  if (baseCloth === "客户原布") return 26;
+  return 10;
+}
+
+function MaterialAndDyeControls({
+  form,
+  materialPlan,
+  setForm,
+  selectProductionMaterial,
+}: {
+  form: ConfirmationDraft;
+  materialPlan: ReturnType<typeof dyePlanForMaterial>;
+  setForm: Dispatch<SetStateAction<ConfirmationDraft>>;
+  selectProductionMaterial: (value: string) => void;
+}) {
+  return (
+    <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
+      <p className="font-semibold">材质、基布与染料</p>
+      <ChoiceGroup
+        label="生产材质"
+        value={form.productionMaterial}
+        options={PRODUCTION_MATERIALS}
+        onSelect={selectProductionMaterial}
+      />
+      <ChoiceGroup
+        label="基布"
+        value={form.baseCloth}
+        options={BASE_CLOTHS}
+        onSelect={(value) =>
+          setForm((current) => ({ ...current, baseCloth: value }))
+        }
+      />
+      <Field
+        label="染料类型"
+        value={form.dyeType || materialPlan.dyeType}
+        onChange={(value) =>
+          setForm((current) => ({ ...current, dyeType: value }))
+        }
+      />
+    </div>
+  );
+}
+
+function LabAdjustmentControls({
+  draftTargetLab,
+  updateLab,
+  setLabValue,
+  nudgeLab,
+  form,
+}: {
+  draftTargetLab: LabValue | null;
+  updateLab: (key: keyof LabValue, value: string) => void;
+  setLabValue: (key: keyof LabValue, value: number) => void;
+  nudgeLab: (delta: LabValue) => void;
+  form: ConfirmationDraft;
+}) {
+  return (
+    <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
+      <p className="font-semibold">目标 Lab 调节</p>
+      <div className="grid gap-2 sm:grid-cols-3">
+        <NumberField
+          label="Lab L"
+          value={form.targetLab.l}
+          onChange={(value) => updateLab("l", value)}
+        />
+        <NumberField
+          label="Lab a"
+          value={form.targetLab.a}
+          onChange={(value) => updateLab("a", value)}
+        />
+        <NumberField
+          label="Lab b"
+          value={form.targetLab.b}
+          onChange={(value) => updateLab("b", value)}
+        />
+      </div>
+      {draftTargetLab ? (
+        <>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            <NudgeButton onClick={() => nudgeLab({ l: -1, a: 0, b: 0 })}>
+              更深
+            </NudgeButton>
+            <NudgeButton onClick={() => nudgeLab({ l: 1, a: 0, b: 0 })}>
+              更浅
+            </NudgeButton>
+            <NudgeButton onClick={() => nudgeLab({ l: 0, a: -1, b: 0 })}>
+              少红
+            </NudgeButton>
+            <NudgeButton onClick={() => nudgeLab({ l: 0, a: 0, b: -1 })}>
+              更蓝
+            </NudgeButton>
+            <NudgeButton onClick={() => nudgeLab({ l: 0, a: 0, b: 1 })}>
+              少蓝
+            </NudgeButton>
+          </div>
+          <LabSlider
+            label="亮度 L"
+            hint="更深 / 更浅"
+            min={0}
+            max={100}
+            value={draftTargetLab.l}
+            onChange={(value) => setLabValue("l", value)}
+          />
+          <LabSlider
+            label="红绿 a"
+            hint="偏绿 / 偏红"
+            min={-60}
+            max={60}
+            value={draftTargetLab.a}
+            onChange={(value) => setLabValue("a", value)}
+          />
+          <LabSlider
+            label="黄蓝 b"
+            hint="偏蓝 / 偏黄"
+            min={-60}
+            max={80}
+            value={draftTargetLab.b}
+            onChange={(value) => setLabValue("b", value)}
+          />
+        </>
+      ) : null}
+    </div>
+  );
 }
 
 function SpectralTuningDialog({
@@ -1273,14 +1376,27 @@ function SpectralTuningDialog({
   nudgeLab: (delta: LabValue) => void;
   selectProductionMaterial: (value: string) => void;
 }) {
-  const materials = ["纯棉", "人棉", "莫代尔", "锦纶", "涤棉混纺", "羊毛", "晴纶"];
-  const baseCloths = ["本白布", "漂白布", "本白汗布", "本白罗纹", "客户原布"];
+  const referenceIlluminant = form.reviewIlluminant || form.illuminant;
+  const referencePreviewLab = draftTargetLab
+    ? previewLabForRendering(
+        draftTargetLab,
+        referenceIlluminant,
+        REAL_WORLD_REFERENCE_LIGHTING,
+        "",
+        "",
+      )
+    : null;
+  const referenceForm = {
+    ...form,
+    illuminant: referenceIlluminant,
+    lighting: REAL_WORLD_REFERENCE_LIGHTING,
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="flex max-h-[92vh] w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] flex-col overflow-hidden border-[#91b8b6] bg-[#f8faf9] p-0 text-[#18222c] sm:max-w-[calc(100vw-48px)] xl:max-w-[1400px]"
+        className="flex h-[92vh] w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] flex-col overflow-hidden border-[#91b8b6] bg-[#f8faf9] p-0 text-[#18222c] sm:max-w-[calc(100vw-48px)] xl:max-w-[1680px]"
       >
         <DialogHeader className="border-b border-[#cfd8d1] bg-[#fbfaf7] px-5 py-4 pr-5 text-left">
           <DialogTitle>大屏调试参数与实时渲染</DialogTitle>
@@ -1289,162 +1405,98 @@ function SpectralTuningDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid min-h-0 flex-1 items-start gap-4 overflow-y-auto p-5 lg:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="grid min-w-0 gap-4">
-          <LivePreviewSurface
-            lab={livePreviewLab}
-            baseLab={draftTargetLab}
-            form={form}
-            large
-          />
-          <div className="grid gap-3 md:grid-cols-2">
-            <MaterialImpactPanel form={form} materialPlan={materialPlan} />
-            <Alert className="border-[#d7a64a] bg-[#fffdf5] text-[#533600]">
-              <AlertTriangle />
-              <AlertTitle>同色异谱风险</AlertTitle>
-              <AlertDescription>{riskLabel}</AlertDescription>
-            </Alert>
-          </div>
-        </div>
-
-        <div className="grid min-w-0 gap-4">
-          <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
-            <LightChoiceGroup
-              label="看样环境"
-              value={form.illuminant}
-              onSelect={(value) =>
-                setForm((current) => ({ ...current, illuminant: value }))
-              }
-            />
-            <LightChoiceGroup
-              label="对照环境"
-              value={form.reviewIlluminant}
-              onSelect={(value) =>
-                setForm((current) => ({ ...current, reviewIlluminant: value }))
-              }
-            />
-            <LightSlider
-              label="模拟日光色温 CCT"
-              value={form.lighting.cctKelvin}
-              min={2700}
-              max={9000}
-              unit="K"
-              onChange={(value) => updateLighting("cctKelvin", value)}
-            />
-            <LightSlider
-              label="光照强度"
-              value={form.lighting.illuminanceLux}
-              min={100}
-              max={2000}
-              unit="lux"
-              onChange={(value) => updateLighting("illuminanceLux", value)}
-            />
-            <LightSlider
-              label="观察角度"
-              value={form.lighting.viewingAngle}
-              min={0}
-              max={90}
-              unit="°"
-              onChange={(value) => updateLighting("viewingAngle", value)}
-            />
-            <LightSlider
-              label="纹理/光泽影响"
-              value={form.lighting.textureGloss}
-              min={0}
-              max={100}
-              unit="%"
-              onChange={(value) => updateLighting("textureGloss", value)}
-            />
-          </div>
-
-          <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
-            <ChoiceGroup
-              label="生产材质"
-              value={form.productionMaterial}
-              options={materials}
-              onSelect={selectProductionMaterial}
-            />
-            <ChoiceGroup
-              label="基布"
-              value={form.baseCloth}
-              options={baseCloths}
-              onSelect={(value) =>
-                setForm((current) => ({ ...current, baseCloth: value }))
-              }
-            />
-            <Field
-              label="染料类型"
-              value={form.dyeType || materialPlan.dyeType}
-              onChange={(value) =>
-                setForm((current) => ({ ...current, dyeType: value }))
-              }
-            />
-          </div>
-
-          <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
-            <div className="grid gap-2 sm:grid-cols-3">
-              <NumberField
-                label="Lab L"
-                value={form.targetLab.l}
-                onChange={(value) => updateLab("l", value)}
+        <div className="grid min-h-0 flex-1 items-start gap-4 overflow-y-auto p-5 pb-24 lg:grid-cols-[minmax(0,1fr)_minmax(380px,420px)]">
+          <div className="grid min-w-0 gap-4">
+            <div className="grid items-stretch gap-3 xl:grid-cols-2">
+              <LivePreviewSurface
+                title="真实环境对照"
+                subtitle="只跟随对照环境；固定 6500K / 1000 lux / 45° / 20% 光泽"
+                lab={referencePreviewLab}
+                baseLab={draftTargetLab}
+                form={referenceForm}
               />
-              <NumberField
-                label="Lab a"
-                value={form.targetLab.a}
-                onChange={(value) => updateLab("a", value)}
-              />
-              <NumberField
-                label="Lab b"
-                value={form.targetLab.b}
-                onChange={(value) => updateLab("b", value)}
+              <LivePreviewSurface
+                title="当前调试预览"
+                subtitle="跟随右侧 Lab、看样环境、光照和材质实时变化"
+                lab={livePreviewLab}
+                baseLab={draftTargetLab}
+                form={form}
               />
             </div>
-            {draftTargetLab ? (
-              <>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                  <NudgeButton onClick={() => nudgeLab({ l: -1, a: 0, b: 0 })}>
-                    更深
-                  </NudgeButton>
-                  <NudgeButton onClick={() => nudgeLab({ l: 1, a: 0, b: 0 })}>
-                    更浅
-                  </NudgeButton>
-                  <NudgeButton onClick={() => nudgeLab({ l: 0, a: -1, b: 0 })}>
-                    少红
-                  </NudgeButton>
-                  <NudgeButton onClick={() => nudgeLab({ l: 0, a: 0, b: -1 })}>
-                    更蓝
-                  </NudgeButton>
-                  <NudgeButton onClick={() => nudgeLab({ l: 0, a: 0, b: 1 })}>
-                    少蓝
-                  </NudgeButton>
-                </div>
-                <LabSlider
-                  label="亮度 L"
-                  hint="更深 / 更浅"
-                  min={0}
-                  max={100}
-                  value={draftTargetLab.l}
-                  onChange={(value) => setLabValue("l", value)}
-                />
-                <LabSlider
-                  label="红绿 a"
-                  hint="偏绿 / 偏红"
-                  min={-60}
-                  max={60}
-                  value={draftTargetLab.a}
-                  onChange={(value) => setLabValue("a", value)}
-                />
-                <LabSlider
-                  label="黄蓝 b"
-                  hint="偏蓝 / 偏黄"
-                  min={-60}
-                  max={80}
-                  value={draftTargetLab.b}
-                  onChange={(value) => setLabValue("b", value)}
-                />
-              </>
-            ) : null}
+            <div className="grid gap-3 md:grid-cols-2">
+              <MaterialImpactPanel form={form} materialPlan={materialPlan} />
+              <Alert className="border-[#d7a64a] bg-[#fffdf5] text-[#533600]">
+                <AlertTriangle />
+                <AlertTitle>同色异谱风险</AlertTitle>
+                <AlertDescription>{riskLabel}</AlertDescription>
+              </Alert>
+            </div>
           </div>
+
+          <div className="grid min-w-0 content-start gap-4">
+            <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
+              <LightChoiceGroup
+                label="看样环境"
+                value={form.illuminant}
+                onSelect={(value) =>
+                  setForm((current) => ({ ...current, illuminant: value }))
+                }
+              />
+              <LightChoiceGroup
+                label="对照环境"
+                value={form.reviewIlluminant}
+                onSelect={(value) =>
+                  setForm((current) => ({ ...current, reviewIlluminant: value }))
+                }
+              />
+              <LightSlider
+                label="模拟日光色温 CCT"
+                value={form.lighting.cctKelvin}
+                min={2700}
+                max={9000}
+                unit="K"
+                onChange={(value) => updateLighting("cctKelvin", value)}
+              />
+              <LightSlider
+                label="光照强度"
+                value={form.lighting.illuminanceLux}
+                min={100}
+                max={2000}
+                unit="lux"
+                onChange={(value) => updateLighting("illuminanceLux", value)}
+              />
+              <LightSlider
+                label="观察角度"
+                value={form.lighting.viewingAngle}
+                min={0}
+                max={90}
+                unit="°"
+                onChange={(value) => updateLighting("viewingAngle", value)}
+              />
+              <LightSlider
+                label="纹理/光泽影响"
+                value={form.lighting.textureGloss}
+                min={0}
+                max={100}
+                unit="%"
+                onChange={(value) => updateLighting("textureGloss", value)}
+              />
+            </div>
+
+          <MaterialAndDyeControls
+            form={form}
+            materialPlan={materialPlan}
+            setForm={setForm}
+            selectProductionMaterial={selectProductionMaterial}
+          />
+
+          <LabAdjustmentControls
+            draftTargetLab={draftTargetLab}
+            updateLab={updateLab}
+            setLabValue={setLabValue}
+            nudgeLab={nudgeLab}
+            form={form}
+          />
 
           <div className="grid gap-3 rounded-md border border-[#cfd8d1] bg-white p-4">
             <ChoiceGroup

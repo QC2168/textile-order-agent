@@ -8,6 +8,13 @@ type AnalysisResult = {
   source: string;
 };
 
+type ModelEnv = {
+  [key: string]: string | undefined;
+  MODEL_API_KEY?: string;
+  MODEL_BASE_URL?: string;
+  MODEL_ID?: string;
+};
+
 function asDisplayString(value: unknown) {
   if (typeof value !== "string" || !value.trim()) return "未识别";
   return value;
@@ -220,16 +227,24 @@ export function completeAnalysisFromInput(
   };
 }
 
+export function getModelRuntimeConfig(env: ModelEnv = process.env) {
+  const apiKey = env.MODEL_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("MODEL_API_KEY 未配置");
+  }
+
+  return {
+    apiKey,
+    baseURL: env.MODEL_BASE_URL ?? "https://api.deepseek.com",
+    model: env.MODEL_ID ?? "deepseek-v4-flash",
+  };
+}
+
 export async function analyzeCustomerInput(
   customerInput: string,
 ): Promise<AnalysisResult> {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
-  const model = process.env.DEEPSEEK_MODEL ?? "deepseek-v4-flash";
-  const baseURL = process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com";
-
-  if (!apiKey) {
-    throw new Error("DEEPSEEK_API_KEY 未配置");
-  }
+  const { apiKey, baseURL, model } = getModelRuntimeConfig();
 
   const client = new OpenAI({ apiKey, baseURL });
   const completion = await client.chat.completions.create({

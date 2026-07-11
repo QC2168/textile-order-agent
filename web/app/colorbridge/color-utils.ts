@@ -30,6 +30,10 @@ function roundLab(value: number) {
   return Number(value.toFixed(1));
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
 export function previewLabForIlluminant(
   lab: LabValue,
   illuminant: string,
@@ -39,35 +43,47 @@ export function previewLabForIlluminant(
 
   if (illuminant.includes("A")) {
     preview = {
-      l: roundLab(lab.l - 1.2),
-      a: roundLab(lab.a + 1.2),
-      b: roundLab(lab.b + 4.2),
+      l: roundLab(lab.l - 0.6),
+      a: roundLab(lab.a + 0.4),
+      b: roundLab(lab.b + 1.2),
     };
   } else if (illuminant.includes("TL84") || illuminant.includes("F11")) {
     preview = {
-      l: roundLab(lab.l - 0.4),
-      a: roundLab(lab.a + 0.8),
-      b: roundLab(lab.b + 1.1),
+      l: roundLab(lab.l - 0.2),
+      a: roundLab(lab.a + 0.3),
+      b: roundLab(lab.b + 0.5),
     };
   } else if (illuminant.includes("D50")) {
     preview = {
-      l: roundLab(lab.l + 0.5),
-      a: roundLab(lab.a + 0.2),
-      b: roundLab(lab.b + 1.4),
+      l: roundLab(lab.l + 0.2),
+      a: roundLab(lab.a + 0.1),
+      b: roundLab(lab.b + 0.4),
+    };
+  } else if (illuminant.includes("LED-B3")) {
+    preview = {
+      l: roundLab(lab.l - 0.1),
+      a: roundLab(lab.a + 0.1),
+      b: roundLab(lab.b - 0.2),
+    };
+  } else if (illuminant.includes("ID65")) {
+    preview = {
+      l: roundLab(lab.l + 0.1),
+      a: roundLab(lab.a - 0.1),
+      b: roundLab(lab.b - 0.3),
     };
   }
 
   if (!lighting) return preview;
 
-  const luxShift = (lighting.illuminanceLux - 1000) / 1000;
-  const cctShift = (lighting.cctKelvin - 6500) / 1000;
-  const angleShift = Math.abs((lighting.viewingAngle - 45) / 45);
-  const glossShift = lighting.textureGloss / 100;
+  const luxShift = clamp((lighting.illuminanceLux - 1000) / 1000, -0.9, 1);
+  const cctShift = clamp((lighting.cctKelvin - 6500) / 2500, -1, 1);
+  const angleShift = clamp(Math.abs(lighting.viewingAngle - 45) / 45, 0, 1);
+  const glossShift = clamp((lighting.textureGloss - 20) / 80, -0.25, 1);
 
   return {
-    l: roundLab(preview.l + luxShift * 2 - angleShift + glossShift * 0.8),
-    a: roundLab(preview.a + glossShift * 0.2),
-    b: roundLab(preview.b - cctShift * 0.8 + glossShift * 0.3),
+    l: roundLab(preview.l + luxShift * 0.45 - angleShift * 0.25 + glossShift * 0.25),
+    a: roundLab(preview.a + glossShift * 0.08),
+    b: roundLab(preview.b - cctShift * 0.35 + glossShift * 0.1),
   };
 }
 
@@ -78,20 +94,20 @@ type LabOffset = {
 };
 
 const materialOffsets: Record<string, LabOffset> = {
-  cellulosic: { l: -0.2, a: 0, b: -0.1 },
-  nylon: { l: 0.6, a: 0.2, b: -0.4 },
-  polyesterCotton: { l: 0.3, a: -0.1, b: 0.5 },
-  wool: { l: -0.4, a: 0.2, b: -0.2 },
-  acrylic: { l: 0.1, a: 0.3, b: 0.2 },
+  cellulosic: { l: -0.1, a: 0, b: -0.05 },
+  nylon: { l: 0.2, a: 0.05, b: -0.15 },
+  polyesterCotton: { l: 0.1, a: -0.05, b: 0.15 },
+  wool: { l: -0.2, a: 0.05, b: -0.1 },
+  acrylic: { l: 0.05, a: 0.1, b: 0.1 },
   unknown: { l: 0, a: 0, b: 0 },
 };
 
 const baseClothOffsets: Record<string, LabOffset> = {
-  本白布: { l: -0.2, a: 0.1, b: 0.1 },
-  漂白布: { l: 1.3, a: -0.1, b: -0.6 },
-  本白汗布: { l: -0.4, a: 0.1, b: 0.2 },
-  本白罗纹: { l: -0.6, a: 0.1, b: 0.3 },
-  "客户原布": { l: -0.9, a: 0.3, b: 0.8 },
+  本白布: { l: -0.1, a: 0.05, b: 0.05 },
+  漂白布: { l: 0.45, a: -0.05, b: -0.25 },
+  本白汗布: { l: -0.15, a: 0.05, b: 0.1 },
+  本白罗纹: { l: -0.2, a: 0.05, b: 0.15 },
+  "客户原布": { l: -0.3, a: 0.1, b: 0.25 },
 };
 
 function materialOffset(material: string) {

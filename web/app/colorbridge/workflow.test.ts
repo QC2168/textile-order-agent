@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   buildHistoricalCaseCandidates,
   buildSampleAttempt,
+  displayLabForSchemeDecision,
   historyReferenceLab,
+  sampleAttemptLimitState,
 } from "./workflow";
 import type { ConfirmedRequirement } from "./types";
 
@@ -117,5 +119,54 @@ describe("buildSampleAttempt", () => {
       passed: true,
     });
     expect(sample.deviation).toContain("推荐参数");
+  });
+});
+
+describe("sampleAttemptLimitState", () => {
+  it("allows saving up to V3 and then reports the enterprise review limit", () => {
+    expect(sampleAttemptLimitState(0)).toEqual({
+      reached: false,
+      nextVersion: "V1",
+      buttonText: "保存 V1 方案",
+    });
+    expect(sampleAttemptLimitState(2)).toEqual({
+      reached: false,
+      nextVersion: "V3",
+      buttonText: "保存 V3 方案",
+    });
+    expect(sampleAttemptLimitState(3)).toEqual({
+      reached: true,
+      nextVersion: null,
+      buttonText: "已达 3 个方案上限",
+    });
+  });
+});
+
+describe("displayLabForSchemeDecision", () => {
+  it("uses the selected final scheme Lab before the live preview Lab", () => {
+    expect(
+      displayLabForSchemeDecision({
+        selectedSample: {
+          id: "sample-v1",
+          version: "V1",
+          lab: { l: 34.6, a: -14.7, b: 5 },
+          deltaE: 0,
+          passed: true,
+          deviation: "selected",
+        },
+        livePreviewLab: { l: 34.6, a: -14.7, b: 3 },
+        targetLab: { l: 35, a: -15, b: 4 },
+      }),
+    ).toEqual({ l: 34.6, a: -14.7, b: 5 });
+  });
+
+  it("uses the live preview Lab when no final scheme has been selected", () => {
+    expect(
+      displayLabForSchemeDecision({
+        selectedSample: undefined,
+        livePreviewLab: { l: 34.6, a: -14.7, b: 3 },
+        targetLab: { l: 35, a: -15, b: 4 },
+      }),
+    ).toEqual({ l: 34.6, a: -14.7, b: 3 });
   });
 });

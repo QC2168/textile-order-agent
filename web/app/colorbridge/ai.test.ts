@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildAnalysisMessages,
   completeAnalysisFromInput,
+  getModelRuntimeConfig,
   parseAnalysisJson,
 } from "./ai";
 
@@ -67,6 +68,27 @@ describe("buildAnalysisMessages", () => {
     expect(messages[0].content).toContain("colorIntent");
     expect(messages[0].content).toContain("targetLab");
     expect(messages[1].content).toContain("客户要黑色棉卫衣，不能发红");
+  });
+});
+
+describe("getModelRuntimeConfig", () => {
+  it("reads the generic model environment variables and ignores legacy provider keys", () => {
+    expect(
+      getModelRuntimeConfig({
+        MODEL_API_KEY: "model-key",
+        MODEL_BASE_URL: "https://example.test/v1",
+        MODEL_ID: "custom-model",
+        [`DEEPSEEK_${"API_KEY"}`]: "legacy-key",
+      }),
+    ).toEqual({
+      apiKey: "model-key",
+      baseURL: "https://example.test/v1",
+      model: "custom-model",
+    });
+  });
+
+  it("reports MODEL_API_KEY when the API key is missing", () => {
+    expect(() => getModelRuntimeConfig({})).toThrow("MODEL_API_KEY 未配置");
   });
 });
 

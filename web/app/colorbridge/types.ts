@@ -1,6 +1,5 @@
 export type StepId =
   | "load"
-  | "analysis"
   | "confirm"
   | "history"
   | "sampling"

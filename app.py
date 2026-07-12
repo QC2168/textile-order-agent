@@ -120,6 +120,20 @@ TOOLS = [
     {
         "type": "function",
         "function": {
+            "name": "preview_color",
+            "description": "生成演示用颜色预览色块。仅根据用户输入中的常见颜色词返回近似 hex，不生成 Lab 或真实调色配方。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "color": {"type": "string", "description": "用户想预览的颜色描述，如蓝色、深红、浅绿"},
+                },
+                "required": ["color"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "create_color_order",
             "description": "创建新的调色需求。",
             "parameters": {
@@ -323,6 +337,63 @@ def get_cases() -> dict[str, Any]:
     }
 
 
+_DEMO_COLOR_HEXES = [
+    (("深蓝", "藏青", "navy"), "#1d4ed8"),
+    (("浅蓝", "天蓝", "sky blue"), "#93c5fd"),
+    (("蓝", "blue"), "#2563eb"),
+    (("深红", "酒红"), "#991b1b"),
+    (("红", "red"), "#dc2626"),
+    (("浅绿",), "#86efac"),
+    (("绿", "green"), "#16a34a"),
+    (("黄", "yellow"), "#facc15"),
+    (("橙", "orange"), "#f97316"),
+    (("紫", "purple"), "#7c3aed"),
+    (("粉", "pink"), "#ec4899"),
+    (("黑", "black"), "#111827"),
+    (("白", "white"), "#f8fafc"),
+    (("灰", "gray", "grey"), "#64748b"),
+    (("棕", "brown"), "#92400e"),
+    (("青", "cyan"), "#06b6d4"),
+]
+
+
+def _demo_color_hex(color: str) -> str:
+    text = color.lower()
+    for keywords, hex_value in _DEMO_COLOR_HEXES:
+        if any(keyword in text for keyword in keywords):
+            return hex_value
+    return "#94a3b8"
+
+
+def _color_preview_svg(color: str, hex_value: str) -> str:
+    label = html.escape(color.strip() or "颜色预览")
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="520" height="180" viewBox="0 0 520 180">'
+        '<rect width="520" height="180" rx="8" fill="#ffffff"/>'
+        f'<rect x="24" y="24" width="156" height="132" rx="8" fill="{hex_value}"/>'
+        '<rect x="24" y="24" width="156" height="132" rx="8" fill="none" stroke="#d1d5db"/>'
+        '<text x="204" y="74" fill="#111827" font-family="Arial, sans-serif" font-size="24" font-weight="700">'
+        f'{label}</text>'
+        '<text x="204" y="112" fill="#374151" font-family="Arial, sans-serif" font-size="20">'
+        f'{hex_value}</text>'
+        '<text x="204" y="142" fill="#6b7280" font-family="Arial, sans-serif" font-size="14">'
+        'Demo preview, not Lab-calibrated</text>'
+        '</svg>'
+    )
+
+
+def preview_color(color: str) -> dict[str, Any]:
+    clean = (color or "").strip() or "颜色预览"
+    hex_value = _demo_color_hex(clean)
+    return {
+        "found": True,
+        "color": clean,
+        "hex": hex_value,
+        "note": "演示色块，仅按常见颜色词生成近似 hex，不代表 Lab 标定或真实调色配方。",
+        "svg": _color_preview_svg(clean, hex_value),
+    }
+
+
 _STATUS_LABELS: dict[str, str] = {
     "requirements_loaded": "需求已录入",
     "analysis_ready": "AI 分析完成",
@@ -374,6 +445,8 @@ def execute_tool(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         return get_cases()
     if tool_name == "check_order_status":
         return check_order_status(arguments.get("status"))
+    if tool_name == "preview_color":
+        return preview_color(arguments.get("color", ""))
     if tool_name == "create_color_order":
         return db_create_order(
             customer_input=arguments["customer_input"],
@@ -454,6 +527,8 @@ def route_demo_tools(content: str) -> list[dict[str, Any]]:
     id_match = re.search(r"[a-z0-9\-]{20,40}", content)
     order_id = id_match.group(0) if id_match else None
 
+    if any(w in content for w in ["生成", "预览", "显示", "展示", "色块"]) and any(w in content for w in ["色", "蓝", "红", "绿", "黄", "黑", "白", "紫", "粉", "橙", "灰", "棕", "青"]):
+        return [{"name": "preview_color", "arguments": {"color": content}}]
     if any(w in content for w in ["分析", "提取", "AI", "confidence"]):
         return [{"name": "get_analysis", "arguments": {"order_id": order_id} if order_id else {}}]
     if any(w in content for w in ["案例", "历史", "参考", "相似"]):
@@ -539,6 +614,12 @@ def build_elements(tool_results: list[dict[str, Any]]) -> list:
             elements.append(cl.Dataframe(
                 data=_samples_to_dataframe(result["sample_attempts"]),
                 display="inline", name=f"samples-{result['order_id']}",
+            ))
+        elif tool == "preview_color":
+            elements.append(cl.Image(
+                content=result["svg"].encode("utf-8"),
+                display="inline", name=f"color-preview-{result['hex']}",
+                mime="image/svg+xml", thread_id="",
             ))
     return elements
 
@@ -661,6 +742,13 @@ def format_fallback_answer(tool_results: list[dict[str, Any]]) -> str:
                 for o in result["orders"]
             )
             parts.append(f"全部调色需求：\n{orders}")
+        elif tool == "preview_color":
+            parts.append(
+                f"结论：已生成演示色块\n"
+                f"颜色描述：{result['color']}\n"
+                f"近似 HEX：{result['hex']}\n"
+                f"说明：{result['note']}"
+            )
     return "\n\n".join(parts)
 
 

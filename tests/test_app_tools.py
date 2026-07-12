@@ -12,6 +12,7 @@ sys.path = [p for p in sys.path if "web/app" not in p and "web\\app" not in p]
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import (
+    build_elements,
     check_order_status,
     complete_tool_arguments,
     execute_tool,
@@ -315,6 +316,20 @@ class ColorBridgeToolTests(unittest.TestCase):
         result = execute_tool("unknown_tool", {})
         self.assertFalse(result["found"])
 
+    def test_execute_tool_preview_color_returns_demo_swatch(self):
+        result = execute_tool("preview_color", {"color": "蓝色棉纱布"})
+        self.assertTrue(result["found"])
+        self.assertEqual(result["hex"], "#2563eb")
+        self.assertEqual(result["color"], "蓝色棉纱布")
+        self.assertIn("#2563eb", result["svg"])
+
+    def test_build_elements_adds_color_preview_image(self):
+        result = execute_tool("preview_color", {"color": "蓝色棉纱布"})
+        elements = build_elements([{"tool": "preview_color", "arguments": {"color": "蓝色棉纱布"}, "result": result}])
+        self.assertEqual(len(elements), 1)
+        self.assertEqual(elements[0].mime, "image/svg+xml")
+        self.assertIn("#2563eb", elements[0].content.decode("utf-8"))
+
     # ============================================================
     # route_demo_tools (所有 7 种关键词 → 工具映射)
     # ============================================================
@@ -342,6 +357,10 @@ class ColorBridgeToolTests(unittest.TestCase):
     def test_route_demo_tools_analysis_keyword(self):
         calls = route_demo_tools("分析一下这个需求")
         self.assertEqual(calls[0]["name"], "get_analysis")
+
+    def test_route_demo_tools_color_preview_keyword(self):
+        calls = route_demo_tools("生成一个蓝色棉纱布颜色")
+        self.assertEqual(calls, [{"name": "preview_color", "arguments": {"color": "生成一个蓝色棉纱布颜色"}}])
 
     def test_route_demo_tools_id_match(self):
         calls = route_demo_tools(self._real_id())
@@ -505,6 +524,10 @@ class ColorBridgeToolTests(unittest.TestCase):
 
     def test_execute_tool_check_order_status(self):
         result = execute_tool("check_order_status", {})
+        self.assertTrue(result["found"])
+
+    def test_execute_tool_preview_color(self):
+        result = execute_tool("preview_color", {"color": "红色"})
         self.assertTrue(result["found"])
 
     # ============================================================

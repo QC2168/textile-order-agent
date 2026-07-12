@@ -44,14 +44,14 @@ describe("previewLabForIlluminant", () => {
     const lab = { l: 62, a: -3, b: -12 };
 
     expect(previewLabForIlluminant(lab, "A 光源")).toEqual({
-      l: 60.8,
-      a: -1.8,
-      b: -7.8,
+      l: 61.4,
+      a: -2.6,
+      b: -10.8,
     });
     expect(lab).toEqual({ l: 62, a: -3, b: -12 });
   });
 
-  it("applies lighting parameters to the preview Lab", () => {
+  it("applies lighting parameters as bounded visual shifts", () => {
     expect(
       previewLabForIlluminant({ l: 62, a: -3, b: -12 }, "D65", {
         cctKelvin: 7500,
@@ -59,7 +59,7 @@ describe("previewLabForIlluminant", () => {
         viewingAngle: 75,
         textureGloss: 50,
       }),
-    ).toEqual({ l: 63.7, a: -2.9, b: -12.7 });
+    ).toEqual({ l: 62.4, a: -3, b: -12.1 });
   });
 });
 
@@ -80,7 +80,7 @@ describe("previewLabForRendering", () => {
         "锦纶",
         "本白布",
       ),
-    ).toEqual({ l: 65.6, a: 5.3, b: 14.8 });
+    ).toEqual({ l: 65.1, a: 5, b: 14.9 });
   });
 
   it("changes predictably when production material changes", () => {
@@ -100,8 +100,8 @@ describe("previewLabForRendering", () => {
       "本白布",
     );
 
-    expect(cotton).toEqual({ l: 64.8, a: 5.1, b: 15.1 });
-    expect(polyesterCotton).toEqual({ l: 65.3, a: 5, b: 15.7 });
+    expect(cotton).toEqual({ l: 64.8, a: 5, b: 15 });
+    expect(polyesterCotton).toEqual({ l: 65, a: 5, b: 15.3 });
   });
 
   it("changes predictably when base cloth changes", () => {
@@ -109,10 +109,10 @@ describe("previewLabForRendering", () => {
 
     expect(
       previewLabForRendering(lab, "D65", lighting, "纯棉", "漂白布"),
-    ).toEqual({ l: 66.3, a: 4.9, b: 14.4 });
+    ).toEqual({ l: 65.4, a: 5, b: 14.7 });
     expect(
       previewLabForRendering(lab, "D65", lighting, "纯棉", "客户原布"),
-    ).toEqual({ l: 64.1, a: 5.3, b: 15.8 });
+    ).toEqual({ l: 64.6, a: 5.1, b: 15.2 });
   });
 });
 

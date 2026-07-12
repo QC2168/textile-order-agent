@@ -24,6 +24,14 @@ type SampleInput = {
   renderLab: LabValue;
 };
 
+type SchemeDecisionLabInput = {
+  selectedSample?: SampleAttemptView | null;
+  livePreviewLab?: LabValue | null;
+  targetLab?: LabValue | null;
+};
+
+export const MAX_SAMPLE_ATTEMPTS = 3;
+
 const historyOffsets: LabValue[] = [
   { l: -0.6, a: 0.2, b: 0.4 },
   { l: 0.4, a: -0.4, b: -0.5 },
@@ -48,6 +56,32 @@ export function historyReferenceLab(
   fallbackLab: LabValue | null,
 ) {
   return selectedCase?.lab ?? aiLab ?? fallbackLab ?? null;
+}
+
+export function sampleAttemptLimitState(currentCount: number) {
+  if (currentCount >= MAX_SAMPLE_ATTEMPTS) {
+    return {
+      reached: true,
+      nextVersion: null,
+      buttonText: `已达 ${MAX_SAMPLE_ATTEMPTS} 个方案上限`,
+    };
+  }
+
+  const nextVersion = `V${currentCount + 1}`;
+
+  return {
+    reached: false,
+    nextVersion,
+    buttonText: `保存 ${nextVersion} 方案`,
+  };
+}
+
+export function displayLabForSchemeDecision({
+  selectedSample,
+  livePreviewLab,
+  targetLab,
+}: SchemeDecisionLabInput) {
+  return selectedSample?.lab ?? livePreviewLab ?? targetLab ?? null;
 }
 
 export function buildHistoricalCaseCandidates({

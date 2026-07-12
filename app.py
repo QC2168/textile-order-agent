@@ -3,6 +3,7 @@ Chainlit Demo - ColorBridge 调色智能体
 通过 DATABASE_URL 连接远程 PostgreSQL，与 Next.js 前端共用同一数据库
 """
 import chainlit as cl
+import html
 import json
 import os
 import re
@@ -119,6 +120,20 @@ TOOLS = [
     {
         "type": "function",
         "function": {
+            "name": "preview_color",
+            "description": "生成演示用颜色预览色块。仅根据用户输入中的常见颜色词返回近似 hex，不生成 Lab 或真实调色配方。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "color": {"type": "string", "description": "用户想预览的颜色描述，如蓝色、深红、浅绿"},
+                },
+                "required": ["color"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "create_color_order",
             "description": "创建新的调色需求。",
             "parameters": {
@@ -195,6 +210,22 @@ def _parse_json(value: Any) -> Any:
     return value
 
 
+def _json_default(obj: Any) -> str:
+    """JSON 序列化 fallback：datetime → isoformat，其他 → str"""
+    if hasattr(obj, "isoformat"):
+        return obj.isoformat()
+    return str(obj)
+
+
+def _to_str(value: Any, default: str = "") -> str:
+    """安全转字符串，datetime 对象转 isoformat"""
+    if value is None:
+        return default
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+    return str(value)
+
+
 def _order_summary(order: dict[str, Any]) -> dict[str, Any]:
     confirmed = _parse_json(order.get("confirmedFields"))
     return {
@@ -212,7 +243,7 @@ def _order_summary(order: dict[str, Any]) -> dict[str, Any]:
         "confirmed_fields": confirmed,
         "selected_case_id": order.get("selectedCaseId"),
         "selected_sample_id": order.get("selectedSampleId"),
-        "created_at": order.get("createdAt", ""),
+        "created_at": _to_str(order.get("createdAt")),
     }
 
 
@@ -234,7 +265,7 @@ def get_order_timeline(order_id: str) -> dict[str, Any]:
             "detail": e["detail"],
             "actor": e.get("actor", ""),
             "event_type": e.get("eventType", ""),
-            "created_at": e.get("createdAt", ""),
+            "created_at": _to_str(e.get("createdAt")),
         }
         for e in events
     ]
@@ -306,6 +337,63 @@ def get_cases() -> dict[str, Any]:
     }
 
 
+_DEMO_COLOR_HEXES = [
+    (("深蓝", "藏青", "navy"), "#1d4ed8"),
+    (("浅蓝", "天蓝", "sky blue"), "#93c5fd"),
+    (("蓝", "blue"), "#2563eb"),
+    (("深红", "酒红"), "#991b1b"),
+    (("红", "red"), "#dc2626"),
+    (("浅绿",), "#86efac"),
+    (("绿", "green"), "#16a34a"),
+    (("黄", "yellow"), "#facc15"),
+    (("橙", "orange"), "#f97316"),
+    (("紫", "purple"), "#7c3aed"),
+    (("粉", "pink"), "#ec4899"),
+    (("黑", "black"), "#111827"),
+    (("白", "white"), "#f8fafc"),
+    (("灰", "gray", "grey"), "#64748b"),
+    (("棕", "brown"), "#92400e"),
+    (("青", "cyan"), "#06b6d4"),
+]
+
+
+def _demo_color_hex(color: str) -> str:
+    text = color.lower()
+    for keywords, hex_value in _DEMO_COLOR_HEXES:
+        if any(keyword in text for keyword in keywords):
+            return hex_value
+    return "#94a3b8"
+
+
+def _color_preview_svg(color: str, hex_value: str) -> str:
+    label = html.escape(color.strip() or "颜色预览")
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="520" height="180" viewBox="0 0 520 180">'
+        '<rect width="520" height="180" rx="8" fill="#ffffff"/>'
+        f'<rect x="24" y="24" width="156" height="132" rx="8" fill="{hex_value}"/>'
+        '<rect x="24" y="24" width="156" height="132" rx="8" fill="none" stroke="#d1d5db"/>'
+        '<text x="204" y="74" fill="#111827" font-family="Arial, sans-serif" font-size="24" font-weight="700">'
+        f'{label}</text>'
+        '<text x="204" y="112" fill="#374151" font-family="Arial, sans-serif" font-size="20">'
+        f'{hex_value}</text>'
+        '<text x="204" y="142" fill="#6b7280" font-family="Arial, sans-serif" font-size="14">'
+        'Demo preview, not Lab-calibrated</text>'
+        '</svg>'
+    )
+
+
+def preview_color(color: str) -> dict[str, Any]:
+    clean = (color or "").strip() or "颜色预览"
+    hex_value = _demo_color_hex(clean)
+    return {
+        "found": True,
+        "color": clean,
+        "hex": hex_value,
+        "note": "演示色块，仅按常见颜色词生成近似 hex，不代表 Lab 标定或真实调色配方。",
+        "svg": _color_preview_svg(clean, hex_value),
+    }
+
+
 _STATUS_LABELS: dict[str, str] = {
     "requirements_loaded": "需求已录入",
     "analysis_ready": "AI 分析完成",
@@ -337,7 +425,7 @@ def check_order_status(status: str | None = None) -> dict[str, Any]:
                 "status": o.get("status", ""),
                 "status_label": _STATUS_LABELS.get(o.get("status", ""), o.get("status", "")),
                 "customer_input": (o.get("customerInput", "") or "")[:80],
-                "created_at": o.get("createdAt", ""),
+                "created_at": _to_str(o.get("createdAt")),
             }
             for o in orders
         ],
@@ -357,6 +445,8 @@ def execute_tool(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         return get_cases()
     if tool_name == "check_order_status":
         return check_order_status(arguments.get("status"))
+    if tool_name == "preview_color":
+        return preview_color(arguments.get("color", ""))
     if tool_name == "create_color_order":
         return db_create_order(
             customer_input=arguments["customer_input"],
@@ -387,11 +477,58 @@ def execute_tool(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     return {"found": False, "error": f"未知工具: {tool_name}"}
 
 
+_TOOL_NAMES = {tool["function"]["name"] for tool in TOOLS}
+_ORDER_ID_REQUIRED_TOOLS = {
+    "get_color_order",
+    "get_order_timeline",
+    "get_analysis",
+    "get_sample_attempts",
+}
+
+
+def parse_text_tool_calls(content: str | None) -> list[dict[str, Any]]:
+    if not content:
+        return []
+    matches = list(re.finditer(r"invoke\s+name=[\"']([^\"']+)[\"']", content))
+    calls: list[dict[str, Any]] = []
+    for index, match in enumerate(matches):
+        name = match.group(1)
+        if name not in _TOOL_NAMES:
+            continue
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(content)
+        json_match = re.search(r"\{.*?\}", content[match.end():end], re.DOTALL)
+        arguments = {}
+        if json_match:
+            parsed = _parse_json(json_match.group(0))
+            if isinstance(parsed, dict):
+                arguments = parsed
+        for param_match in re.finditer(r"<[^<>]*parameter\s+([^>]*)>(.*?)</[^<>]*parameter>", content[match.end():end], re.DOTALL):
+            attrs, raw_value = param_match.groups()
+            name_match = re.search(r"name=[\"']([^\"']+)[\"']", attrs)
+            if not name_match:
+                continue
+            value = html.unescape(raw_value.strip())
+            arguments[name_match.group(1)] = value if re.search(r"string=[\"']true[\"']", attrs) else _parse_json(value)
+        calls.append({"name": name, "arguments": arguments})
+    return calls
+
+
+def complete_tool_arguments(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    completed = dict(arguments)
+    if tool_name in _ORDER_ID_REQUIRED_TOOLS and not completed.get("order_id"):
+        orders = list_orders(limit=2)
+        if len(orders) == 1:
+            completed["order_id"] = orders[0]["id"]
+    return completed
+
+
 def route_demo_tools(content: str) -> list[dict[str, Any]]:
     """规则 fallback：按关键词匹配工具，不依赖大模型 tool_call"""
-    id_match = re.search(r"[a-z0-9]{20,30}", content)
+    id_match = re.search(r"[a-z0-9\-]{20,40}", content)
     order_id = id_match.group(0) if id_match else None
 
+    if any(w in content for w in ["生成", "预览", "显示", "展示", "色块"]) and any(w in content for w in ["色", "蓝", "红", "绿", "黄", "黑", "白", "紫", "粉", "橙", "灰", "棕", "青"]):
+        return [{"name": "preview_color", "arguments": {"color": content}}]
     if any(w in content for w in ["分析", "提取", "AI", "confidence"]):
         return [{"name": "get_analysis", "arguments": {"order_id": order_id} if order_id else {}}]
     if any(w in content for w in ["案例", "历史", "参考", "相似"]):
@@ -478,6 +615,12 @@ def build_elements(tool_results: list[dict[str, Any]]) -> list:
                 data=_samples_to_dataframe(result["sample_attempts"]),
                 display="inline", name=f"samples-{result['order_id']}",
             ))
+        elif tool == "preview_color":
+            elements.append(cl.Image(
+                content=result["svg"].encode("utf-8"),
+                display="inline", name=f"color-preview-{result['hex']}",
+                mime="image/svg+xml", thread_id="",
+            ))
     return elements
 
 
@@ -529,7 +672,7 @@ def _tool_context_message(tool_results: list[dict[str, Any]]) -> dict[str, str]:
     return {
         "role": "system",
         "content": "以下是本地调色工具返回结果，请只基于这些结果回答：\n"
-        + json.dumps(tool_results, ensure_ascii=False, indent=2),
+        + json.dumps(tool_results, ensure_ascii=False, indent=2, default=_json_default),
     }
 
 
@@ -599,6 +742,13 @@ def format_fallback_answer(tool_results: list[dict[str, Any]]) -> str:
                 for o in result["orders"]
             )
             parts.append(f"全部调色需求：\n{orders}")
+        elif tool == "preview_color":
+            parts.append(
+                f"结论：已生成演示色块\n"
+                f"颜色描述：{result['color']}\n"
+                f"近似 HEX：{result['hex']}\n"
+                f"说明：{result['note']}"
+            )
     return "\n\n".join(parts)
 
 
@@ -638,7 +788,10 @@ async def on_message(message: cl.Message):
         if tool_calls:
             final_messages.append(_assistant_tool_message(assistant_message))
             for tool_call in tool_calls:
-                arguments = json.loads(tool_call.function.arguments or "{}")
+                arguments = complete_tool_arguments(
+                    tool_call.function.name,
+                    json.loads(tool_call.function.arguments or "{}"),
+                )
                 result = execute_tool(tool_call.function.name, arguments)
                 async with cl.Step(name=f"🔧 {tool_call.function.name}", type="tool") as step:
                     step.input = arguments
@@ -646,17 +799,19 @@ async def on_message(message: cl.Message):
                 final_messages.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
-                    "content": json.dumps(result, ensure_ascii=False),
+                    "content": json.dumps(result, ensure_ascii=False, default=_json_default),
                 })
                 tool_results.append({"tool": tool_call.function.name, "arguments": arguments, "result": result})
         else:
-            routed_calls = route_demo_tools(message.content)
+            text_calls = parse_text_tool_calls(assistant_message.content)
+            routed_calls = text_calls or route_demo_tools(message.content)
             if routed_calls:
                 for call in routed_calls:
-                    result = execute_tool(call["name"], call["arguments"])
-                    tool_results.append({"tool": call["name"], "arguments": call["arguments"], "result": result})
+                    arguments = complete_tool_arguments(call["name"], call["arguments"])
+                    result = execute_tool(call["name"], arguments)
+                    tool_results.append({"tool": call["name"], "arguments": arguments, "result": result})
                     async with cl.Step(name=f"🔧 fallback: {call['name']}", type="tool") as step:
-                        step.input = call["arguments"]
+                        step.input = arguments
                         step.output = result
                 final_messages.append(_tool_context_message(tool_results))
             elif assistant_message.content:
@@ -699,10 +854,10 @@ async def on_message(message: cl.Message):
         if not routed_calls:
             answer = f"模型调用失败：{exc}\n\n你可以重试，或输入调色需求 ID 进行查询。"
         else:
-            tool_results = [
-                {"tool": call["name"], "arguments": call["arguments"], "result": execute_tool(call["name"], call["arguments"])}
-                for call in routed_calls
-            ]
+            tool_results = []
+            for call in routed_calls:
+                arguments = complete_tool_arguments(call["name"], call["arguments"])
+                tool_results.append({"tool": call["name"], "arguments": arguments, "result": execute_tool(call["name"], arguments)})
             answer = format_fallback_answer(tool_results)
         messages.append({"role": "assistant", "content": answer})
         cl.user_session.set("messages", messages)

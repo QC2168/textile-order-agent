@@ -24,6 +24,7 @@ import type {
 import {
   buildHistoricalCaseCandidates,
   buildSampleAttempt,
+  MAX_SAMPLE_ATTEMPTS,
 } from "./workflow";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
@@ -576,7 +577,7 @@ export async function attachNextSampleAttempt(
     renderLab,
   });
 
-  if (attemptIndex >= 3) {
+  if (attemptIndex >= MAX_SAMPLE_ATTEMPTS) {
     return stateFromOrder(orderId);
   }
   const selectedCaseId = order?.selectedCaseId ?? null;

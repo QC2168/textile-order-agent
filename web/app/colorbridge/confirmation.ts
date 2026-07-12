@@ -39,6 +39,13 @@ export const DEFAULT_LIGHTING: LightingCondition = {
   textureGloss: 20,
 };
 
+export const REAL_WORLD_REFERENCE_LIGHTING: LightingCondition = {
+  cctKelvin: 6500,
+  illuminanceLux: 1000,
+  viewingAngle: 45,
+  textureGloss: 20,
+};
+
 export const DEFAULT_IMAGE_PROMPT_HINTS: ImagePromptHints = {
   colorDescription: "按客户描述提取目标色，图片仅作辅助参考。",
   imageRisk: "图片白平衡、屏幕显示和局部阴影可能影响判断。",

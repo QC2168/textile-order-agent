@@ -3,6 +3,7 @@ Chainlit Demo - ColorBridge 调色智能体
 通过 DATABASE_URL 连接远程 PostgreSQL，与 Next.js 前端共用同一数据库
 """
 import chainlit as cl
+import html
 import json
 import os
 import re
@@ -403,6 +404,51 @@ def execute_tool(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     return {"found": False, "error": f"未知工具: {tool_name}"}
 
 
+_TOOL_NAMES = {tool["function"]["name"] for tool in TOOLS}
+_ORDER_ID_REQUIRED_TOOLS = {
+    "get_color_order",
+    "get_order_timeline",
+    "get_analysis",
+    "get_sample_attempts",
+}
+
+
+def parse_text_tool_calls(content: str | None) -> list[dict[str, Any]]:
+    if not content:
+        return []
+    matches = list(re.finditer(r"invoke\s+name=[\"']([^\"']+)[\"']", content))
+    calls: list[dict[str, Any]] = []
+    for index, match in enumerate(matches):
+        name = match.group(1)
+        if name not in _TOOL_NAMES:
+            continue
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(content)
+        json_match = re.search(r"\{.*?\}", content[match.end():end], re.DOTALL)
+        arguments = {}
+        if json_match:
+            parsed = _parse_json(json_match.group(0))
+            if isinstance(parsed, dict):
+                arguments = parsed
+        for param_match in re.finditer(r"<[^<>]*parameter\s+([^>]*)>(.*?)</[^<>]*parameter>", content[match.end():end], re.DOTALL):
+            attrs, raw_value = param_match.groups()
+            name_match = re.search(r"name=[\"']([^\"']+)[\"']", attrs)
+            if not name_match:
+                continue
+            value = html.unescape(raw_value.strip())
+            arguments[name_match.group(1)] = value if re.search(r"string=[\"']true[\"']", attrs) else _parse_json(value)
+        calls.append({"name": name, "arguments": arguments})
+    return calls
+
+
+def complete_tool_arguments(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    completed = dict(arguments)
+    if tool_name in _ORDER_ID_REQUIRED_TOOLS and not completed.get("order_id"):
+        orders = list_orders(limit=2)
+        if len(orders) == 1:
+            completed["order_id"] = orders[0]["id"]
+    return completed
+
+
 def route_demo_tools(content: str) -> list[dict[str, Any]]:
     """规则 fallback：按关键词匹配工具，不依赖大模型 tool_call"""
     id_match = re.search(r"[a-z0-9\-]{20,40}", content)
@@ -654,7 +700,10 @@ async def on_message(message: cl.Message):
         if tool_calls:
             final_messages.append(_assistant_tool_message(assistant_message))
             for tool_call in tool_calls:
-                arguments = json.loads(tool_call.function.arguments or "{}")
+                arguments = complete_tool_arguments(
+                    tool_call.function.name,
+                    json.loads(tool_call.function.arguments or "{}"),
+                )
                 result = execute_tool(tool_call.function.name, arguments)
                 async with cl.Step(name=f"🔧 {tool_call.function.name}", type="tool") as step:
                     step.input = arguments
@@ -666,13 +715,15 @@ async def on_message(message: cl.Message):
                 })
                 tool_results.append({"tool": tool_call.function.name, "arguments": arguments, "result": result})
         else:
-            routed_calls = route_demo_tools(message.content)
+            text_calls = parse_text_tool_calls(assistant_message.content)
+            routed_calls = text_calls or route_demo_tools(message.content)
             if routed_calls:
                 for call in routed_calls:
-                    result = execute_tool(call["name"], call["arguments"])
-                    tool_results.append({"tool": call["name"], "arguments": call["arguments"], "result": result})
+                    arguments = complete_tool_arguments(call["name"], call["arguments"])
+                    result = execute_tool(call["name"], arguments)
+                    tool_results.append({"tool": call["name"], "arguments": arguments, "result": result})
                     async with cl.Step(name=f"🔧 fallback: {call['name']}", type="tool") as step:
-                        step.input = call["arguments"]
+                        step.input = arguments
                         step.output = result
                 final_messages.append(_tool_context_message(tool_results))
             elif assistant_message.content:
@@ -715,10 +766,10 @@ async def on_message(message: cl.Message):
         if not routed_calls:
             answer = f"模型调用失败：{exc}\n\n你可以重试，或输入调色需求 ID 进行查询。"
         else:
-            tool_results = [
-                {"tool": call["name"], "arguments": call["arguments"], "result": execute_tool(call["name"], call["arguments"])}
-                for call in routed_calls
-            ]
+            tool_results = []
+            for call in routed_calls:
+                arguments = complete_tool_arguments(call["name"], call["arguments"])
+                tool_results.append({"tool": call["name"], "arguments": arguments, "result": execute_tool(call["name"], arguments)})
             answer = format_fallback_answer(tool_results)
         messages.append({"role": "assistant", "content": answer})
         cl.user_session.set("messages", messages)

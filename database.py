@@ -1,6 +1,6 @@
 """
 PostgreSQL 数据库模块 - ColorBridge 调色需求管理
-通过 DATABASE_URL 连接远程 PostgreSQL，与 Next.js 前端共用同一数据库
+通过 COLORBRIDGE_DATABASE_URL 连接远程 PostgreSQL，与 Next.js 前端共用同一数据库
 """
 import os
 import json
@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import psycopg2
 import psycopg2.extras
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://colorbridge:colorbridge@localhost:54321/colorbridge")
+DATABASE_URL = os.getenv("COLORBRIDGE_DATABASE_URL", "postgresql://colorbridge:colorbridge@localhost:54321/colorbridge")
 
 
 @contextmanager

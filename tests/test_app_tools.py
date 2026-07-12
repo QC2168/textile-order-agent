@@ -1,6 +1,8 @@
 import unittest
+import importlib
 import os
 import sys
+from unittest.mock import patch
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import (
     check_order_status,
+    complete_tool_arguments,
     execute_tool,
     format_fallback_answer,
     get_analysis_result,
@@ -18,6 +21,7 @@ from app import (
     get_color_order,
     get_order_timeline,
     get_samples,
+    parse_text_tool_calls,
     route_demo_tools,
     _order_summary,
 )
@@ -31,8 +35,8 @@ class ColorBridgeToolTests(unittest.TestCase):
         """取一条真实 ColorOrder 用于只读测试"""
         import psycopg2
         import psycopg2.extras
-        DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://colorbridge:colorbridge@localhost:54321/colorbridge")
-        conn = psycopg2.connect(DATABASE_URL)
+        colorbridge_database_url = os.getenv("COLORBRIDGE_DATABASE_URL", "postgresql://colorbridge:colorbridge@localhost:54321/colorbridge")
+        conn = psycopg2.connect(colorbridge_database_url)
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute('SELECT id FROM "ColorOrder" ORDER BY "createdAt" DESC LIMIT 1')
         row = cursor.fetchone()
@@ -48,8 +52,8 @@ class ColorBridgeToolTests(unittest.TestCase):
         if not cls._test_order_ids:
             return
         import psycopg2
-        DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://colorbridge:colorbridge@localhost:54321/colorbridge")
-        conn = psycopg2.connect(DATABASE_URL)
+        colorbridge_database_url = os.getenv("COLORBRIDGE_DATABASE_URL", "postgresql://colorbridge:colorbridge@localhost:54321/colorbridge")
+        conn = psycopg2.connect(colorbridge_database_url)
         cursor = conn.cursor()
         for oid in cls._test_order_ids:
             try:
@@ -63,6 +67,19 @@ class ColorBridgeToolTests(unittest.TestCase):
         if not self._order_id:
             self.skipTest("数据库无 ColorOrder 数据")
         return self._order_id
+
+    def test_database_uses_colorbridge_database_url(self):
+        import database
+        with patch.dict(os.environ, {
+            "DATABASE_URL": "postgresql://chainlit:chainlit@localhost:5432/chainlit",
+            "COLORBRIDGE_DATABASE_URL": "postgresql://colorbridge:colorbridge@localhost:54321/colorbridge",
+        }):
+            reloaded = importlib.reload(database)
+            self.assertEqual(
+                reloaded.DATABASE_URL,
+                "postgresql://colorbridge:colorbridge@localhost:54321/colorbridge",
+            )
+        importlib.reload(database)
 
     def _create_test_order(self) -> str:
         """创建一个测试订单并注册清理，返回 order_id"""
@@ -333,6 +350,53 @@ class ColorBridgeToolTests(unittest.TestCase):
     def test_route_demo_tools_no_match(self):
         calls = route_demo_tools("你好")
         self.assertEqual(calls, [])
+
+    def test_parse_text_tool_calls_reads_dsml_invoke(self):
+        content = '系统中当前有 1 个调色需求订单，我来查询该订单的打样记录。\n<｜｜DSML｜｜tool_calls>\n<｜｜DSML｜｜invoke name="get_sample_attempts">'
+        calls = parse_text_tool_calls(content)
+        self.assertEqual(calls, [{"name": "get_sample_attempts", "arguments": {}}])
+
+    def test_parse_text_tool_calls_reads_dsml_parameters_for_all_tools(self):
+        content = """
+<｜｜DSML｜｜tool_calls>
+<｜｜DSML｜｜invoke name="get_color_order"><｜｜DSML｜｜parameter name="order_id" string="true">order-1</｜｜DSML｜｜parameter></｜｜DSML｜｜invoke>
+<｜｜DSML｜｜invoke name="get_order_timeline"><｜｜DSML｜｜parameter name="order_id" string="true">order-2</｜｜DSML｜｜parameter></｜｜DSML｜｜invoke>
+<｜｜DSML｜｜invoke name="get_analysis"><｜｜DSML｜｜parameter name="order_id" string="true">order-3</｜｜DSML｜｜parameter></｜｜DSML｜｜invoke>
+<｜｜DSML｜｜invoke name="get_sample_attempts"><｜｜DSML｜｜parameter name="order_id" string="true">order-4</｜｜DSML｜｜parameter></｜｜DSML｜｜invoke>
+<｜｜DSML｜｜invoke name="get_historical_cases"><｜｜DSML｜｜parameter name="fabric" string="true">棉</｜｜DSML｜｜parameter><｜｜DSML｜｜parameter name="color" string="true">蓝色</｜｜DSML｜｜parameter></｜｜DSML｜｜invoke>
+<｜｜DSML｜｜invoke name="check_order_status"><｜｜DSML｜｜parameter name="status" string="true">analysis_failed</｜｜DSML｜｜parameter></｜｜DSML｜｜invoke>
+<｜｜DSML｜｜invoke name="create_color_order"><｜｜DSML｜｜parameter name="customer_input" string="true">蓝色棉纱布</｜｜DSML｜｜parameter><｜｜DSML｜｜parameter name="customer_name" string="true">测试客户</｜｜DSML｜｜parameter><｜｜DSML｜｜parameter name="requested_color" string="true">蓝色</｜｜DSML｜｜parameter></｜｜DSML｜｜invoke>
+<｜｜DSML｜｜invoke name="update_color_order"><｜｜DSML｜｜parameter name="order_id" string="true">order-5</｜｜DSML｜｜parameter><｜｜DSML｜｜parameter name="status" string="true">requirements_confirmed</｜｜DSML｜｜parameter></｜｜DSML｜｜invoke>
+<｜｜DSML｜｜invoke name="delete_color_order"><｜｜DSML｜｜parameter name="order_id" string="true">order-6</｜｜DSML｜｜parameter></｜｜DSML｜｜invoke>
+<｜｜DSML｜｜invoke name="list_color_orders"><｜｜DSML｜｜parameter name="status" string="true">requirements_loaded</｜｜DSML｜｜parameter><｜｜DSML｜｜parameter name="limit">2</｜｜DSML｜｜parameter></｜｜DSML｜｜invoke>
+</｜｜DSML｜｜tool_calls>
+"""
+        calls = parse_text_tool_calls(content)
+        self.assertEqual(
+            calls,
+            [
+                {"name": "get_color_order", "arguments": {"order_id": "order-1"}},
+                {"name": "get_order_timeline", "arguments": {"order_id": "order-2"}},
+                {"name": "get_analysis", "arguments": {"order_id": "order-3"}},
+                {"name": "get_sample_attempts", "arguments": {"order_id": "order-4"}},
+                {"name": "get_historical_cases", "arguments": {"fabric": "棉", "color": "蓝色"}},
+                {"name": "check_order_status", "arguments": {"status": "analysis_failed"}},
+                {"name": "create_color_order", "arguments": {"customer_input": "蓝色棉纱布", "customer_name": "测试客户", "requested_color": "蓝色"}},
+                {"name": "update_color_order", "arguments": {"order_id": "order-5", "status": "requirements_confirmed"}},
+                {"name": "delete_color_order", "arguments": {"order_id": "order-6"}},
+                {"name": "list_color_orders", "arguments": {"status": "requirements_loaded", "limit": 2}},
+            ],
+        )
+
+    def test_complete_tool_arguments_uses_single_order_id(self):
+        with patch("app.list_orders", return_value=[{"id": "order-1"}]):
+            arguments = complete_tool_arguments("get_sample_attempts", {})
+        self.assertEqual(arguments, {"order_id": "order-1"})
+
+    def test_complete_tool_arguments_keeps_missing_id_when_not_single_order(self):
+        with patch("app.list_orders", return_value=[{"id": "order-1"}, {"id": "order-2"}]):
+            arguments = complete_tool_arguments("get_sample_attempts", {})
+        self.assertEqual(arguments, {})
 
     # ============================================================
     # format_fallback_answer (所有 7 种工具类型)
